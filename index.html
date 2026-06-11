@@ -1,0 +1,2717 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tally Maker</title>
+<link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&family=Barlow+Condensed:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0e14;--panel:#111825;--border:#1e2d42;
+  --accent:#f0a500;--accent2:#00b4d8;--green:#2ec4b6;
+  --danger:#e63946;--special:#a78bfa;
+  --text:#c9d6e3;--muted:#5a6a7e;--input-bg:#0d1520;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:"Exo 2",sans-serif;min-height:100vh;}
+/* LAUNCHER */
+#launcher{
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(6,10,16,0.97);
+  display:flex;align-items:center;justify-content:center;
+}
+.lbox{
+  background:var(--panel);border:1px solid var(--border);
+  border-top:3px solid var(--accent);border-radius:10px;
+  padding:36px 40px;max-width:440px;width:90%;
+  text-align:center;box-shadow:0 24px 60px rgba(0,0,0,0.6);
+}
+.l-brand{font-family:"Rajdhani",sans-serif;font-size:11px;letter-spacing:4px;color:var(--accent);text-transform:uppercase;margin-bottom:6px;}
+.l-title{font-family:"Rajdhani",sans-serif;font-size:34px;font-weight:700;letter-spacing:3px;color:#fff;text-transform:uppercase;margin-bottom:4px;}
+.l-tag{font-size:10px;color:var(--muted);letter-spacing:1.5px;font-family:"Share Tech Mono",monospace;margin-bottom:28px;}
+.l-opts{display:flex;flex-direction:column;gap:12px;margin-bottom:22px;}
+.l-opt{
+  display:flex;align-items:center;gap:14px;
+  background:var(--input-bg);border:2px solid var(--border);
+  border-radius:8px;padding:14px 18px;cursor:pointer;
+  transition:border-color 0.2s,background 0.2s;text-align:left;width:100%;
+}
+.l-opt:hover{border-color:var(--accent2);}
+.l-opt.sel{border-color:var(--accent);background:#141e2e;}
+.l-opt input{display:none;}
+.l-icon{font-size:26px;width:36px;text-align:center;flex-shrink:0;}
+.l-name{font-family:"Rajdhani",sans-serif;font-size:15px;font-weight:700;letter-spacing:1px;color:var(--text);margin-bottom:2px;}
+.l-desc{font-size:10px;color:var(--muted);font-family:"Share Tech Mono",monospace;}
+.l-ok{
+  font-family:"Rajdhani",sans-serif;font-weight:700;font-size:15px;
+  letter-spacing:3px;text-transform:uppercase;
+  background:var(--accent);color:#0a0e14;border:none;
+  border-radius:6px;padding:13px 0;width:100%;cursor:pointer;
+}
+.l-ok:hover{background:#ffb820;}
+.l-foot{font-size:9px;color:var(--muted);margin-top:14px;font-family:"Share Tech Mono",monospace;line-height:1.6;}
+/* APP BAR */
+.app-bar{
+  display:none;align-items:center;
+  background:#060a10;border-bottom:2px solid var(--accent);
+  padding:0 14px;min-height:52px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:500;
+}
+.ab-left{display:flex;flex-direction:column;padding-right:16px;border-right:1px solid var(--border);margin-right:12px;}
+.ab-title{font-family:"Rajdhani",sans-serif;font-size:20px;font-weight:700;letter-spacing:4px;color:var(--accent);text-transform:uppercase;white-space:nowrap;}
+.ab-sub{font-size:9px;color:var(--muted);letter-spacing:0.4px;font-family:"Share Tech Mono",monospace;white-space:normal;max-width:300px;line-height:1.5;}
+.ab-btns{display:flex;gap:6px;flex-wrap:wrap;margin-left:auto;}
+.sw-btn{
+  font-family:"Rajdhani",sans-serif;font-weight:700;font-size:12px;
+  letter-spacing:1.5px;text-transform:uppercase;
+  border:1px solid var(--border);background:var(--input-bg);
+  color:var(--muted);padding:7px 16px;cursor:pointer;
+  border-radius:4px;transition:all 0.2s;white-space:nowrap;
+}
+.sw-btn:hover{border-color:var(--accent2);color:var(--accent2);}
+.sw-btn.on{background:var(--accent);color:#0a0e14;border-color:var(--accent);}
+/* APP VIEWS */
+.app-view{display:none;}
+.app-view.active{display:block;}
+/* DP TOOLBAR */
+.dp-toolbar{
+  background:#090b08;border-bottom:1px solid #232923;
+  padding:8px 14px;display:flex;gap:8px;flex-wrap:wrap;align-items:center;
+}
+.dp-toolbar-title{font-family:"Barlow Condensed",sans-serif;font-weight:900;font-size:16px;letter-spacing:2px;color:#fff;text-transform:uppercase;margin-right:6px;}
+.btn-sm{font-size:11px;font-weight:700;letter-spacing:1px;border-radius:3px;padding:5px 12px;cursor:pointer;font-family:"Share Tech Mono",monospace;background:#1a2a1a;color:#55c255;border:1px solid #2d6a2d;transition:background 0.2s;}
+.btn-sm:hover{background:#223322;}
+.btn-sm.orange{background:#2a1e0a;color:#f0a500;border-color:#6a4500;}
+.btn-sm.orange:hover{background:#332200;}
+@media print{
+  /* Hide all UI chrome */
+  #launcher{display:none!important;}
+  .app-bar{display:none!important;}
+  .dp-toolbar{display:none!important;}
+  .app-view{display:none!important;}
+  .app-view.active{display:block!important;}
+
+  /* ── DP print rules ── */
+  @page{size:A4 portrait;margin:12mm 10mm 18mm 10mm;}
+  #dpApp .topbar,
+  #dpApp .tab-bar,
+  #dpApp .setup-panel,
+  #dpApp .input-panel,
+  #dpApp .action-row,
+  #dpApp .backup-banner,
+  #dpApp .err-msg,
+  #dpApp .no-print,
+  #dpApp .pipe-num-box{display:none!important;}
+  #dpApp [id="dpEnableCorrection"],#dpApp [for="dpEnableCorrection"],#dpApp #dpCorrectionPanel{display:none!important;}
+  #dpApp div:has(>#dpEnableCorrection){display:none!important;}
+  #dpApp .container{max-width:100%;padding:0;}
+  #dpApp .print-header{display:block!important;}
+  #dpApp .spec-bar{display:block!important;color:#000!important;font-size:11px;font-family:Arial,sans-serif!important;padding:2px 0 8px;}
+  #dpApp table{font-size:11px;border-collapse:collapse!important;width:100%;font-family:Arial,sans-serif!important;table-layout:fixed;}
+  #dpApp table, #dpApp thead th, #dpApp tbody td{border:1px solid #000!important;}
+  #dpApp thead tr{background:#ddd!important;}
+  #dpApp thead th{color:#000!important;font-size:10px;padding:6px 5px;background:#ddd!important;font-weight:bold;font-family:Arial,sans-serif!important;word-break:break-word;white-space:normal;vertical-align:middle;}
+  #dpApp th.th-sl{width:30px!important;}
+  #dpApp th.th-sno{width:60px!important;}
+  #dpApp th.th-slen{width:80px!important;}
+  #dpApp th.th-len{width:80px!important;}
+  #dpApp th.th-rem{width:90px!important;}
+  #dpApp tbody td{padding:5px;color:#000!important;vertical-align:middle;font-size:11px;font-family:Arial,sans-serif!important;word-break:break-word;white-space:normal;}
+  #dpApp td.rem-dp{font-size:10px;color:#000!important;word-break:break-word;}
+  #dpApp tbody tr.sfirst td{border-top:2px solid #000!important;}
+  #dpApp td.len{font-weight:bold;}
+  #dpApp td.sno{font-weight:bold;}
+  #dpApp th.del-th, #dpApp td.del-cell{display:none!important;}
+  #dpApp .summary{display:flex!important;flex-wrap:wrap!important;gap:6px!important;margin-top:10px!important;}
+  #dpApp .sum-card{display:block!important;border:1px solid #000!important;background:#fff!important;padding:7px 10px!important;flex:1!important;min-width:90px!important;}
+  #dpApp .sum-label{color:#333!important;font-size:9px!important;display:block!important;margin-bottom:2px!important;font-family:Arial,sans-serif!important;letter-spacing:0!important;}
+  #dpApp .sum-val{color:#000!important;font-size:14px!important;display:block!important;font-weight:bold!important;font-family:Arial,sans-serif!important;}
+  .dp-print-footer,.tbg-print-footer{display:block!important;position:fixed;bottom:4mm;left:0;right:0;text-align:center;font-size:7.5px;color:#555;font-family:Arial,sans-serif;border-top:1px solid #ccc;padding-top:2px;}
+  #enableCorrection,label[for="enableCorrection"],#correctionPanel{display:none!important;}
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+
+
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;600;700&family=Share+Tech+Mono&family=Exo+2:wght@300;400;600&display=swap');
+:root{
+  --bg:#0a0e14;--panel:#111825;--border:#1e2d42;--accent:#f0a500;--accent2:#00b4d8;
+  --danger:#e63946;--green:#2ec4b6;--special:#a78bfa;--text:#c9d6e3;--muted:#5a6a7e;--input-bg:#0d1520;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--bg);color:var(--text);font-family:'Exo 2',sans-serif;min-height:100vh;padding:0;}
+
+/* ===== TOP NAV ===== */
+.top-nav{
+  display:flex;align-items:center;gap:0;
+  background:#060a10;border-bottom:2px solid var(--accent);
+  padding:0 12px;min-height:48px;flex-wrap:wrap;
+}
+.app-title{
+  font-family:'Rajdhani',sans-serif;font-size:18px;font-weight:700;
+  letter-spacing:3px;color:var(--accent);text-transform:uppercase;
+  padding-right:20px;border-right:1px solid var(--border);margin-right:8px;white-space:nowrap;
+}
+.nav-btn{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;
+  text-transform:uppercase;background:transparent;border:none;color:var(--muted);
+  padding:8px 14px;cursor:pointer;border-bottom:2px solid transparent;
+  transition:color 0.2s,border-color 0.2s;white-space:nowrap;
+}
+.nav-btn:hover{color:var(--text);}
+.nav-btn.active{color:var(--accent2);border-bottom:2px solid var(--accent2);}
+.nav-sep{width:1px;height:24px;background:var(--border);margin:0 4px;}
+
+/* ===== TALLY TABS ===== */
+.tally-tabs-bar{
+  display:flex;align-items:flex-end;gap:2px;
+  background:#080c12;border-bottom:1px solid var(--border);
+  padding:6px 12px 0;overflow-x:auto;
+}
+.tally-tab{
+  font-family:'Rajdhani',sans-serif;font-weight:600;font-size:12px;letter-spacing:1px;
+  background:#0d1520;border:1px solid var(--border);border-bottom:none;
+  color:var(--muted);padding:6px 14px;cursor:pointer;border-radius:4px 4px 0 0;
+  display:flex;align-items:center;gap:6px;white-space:nowrap;min-width:80px;
+  transition:background 0.15s,color 0.15s;
+}
+.tally-tab:hover{background:#151f2d;color:var(--text);}
+.tally-tab.active{background:var(--panel);color:var(--accent);border-color:var(--accent2);border-bottom:1px solid var(--panel);}
+.tally-tab-name{outline:none;background:transparent;border:none;color:inherit;font-family:inherit;font-size:inherit;font-weight:inherit;letter-spacing:inherit;cursor:pointer;max-width:120px;}
+.tally-tab-close{color:var(--muted);font-size:14px;line-height:1;opacity:0.5;transition:opacity 0.2s;}
+.tally-tab-close:hover{opacity:1;color:var(--danger);}
+
+/* ===== MAIN CONTENT ===== */
+.main-content{padding:16px;}
+
+/* unit toggle */
+.unit-toggle{display:flex;gap:0;margin-bottom:0;}
+.unit-btn{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;
+  text-transform:uppercase;border:1px solid var(--border);background:var(--input-bg);
+  color:var(--muted);padding:5px 14px;cursor:pointer;transition:all 0.2s;
+}
+.unit-btn:first-child{border-radius:4px 0 0 4px;}
+.unit-btn:last-child{border-radius:0 4px 4px 0;border-left:none;}
+.unit-btn.active{background:var(--accent2);color:#0a0e14;border-color:var(--accent2);}
+
+/* grids */
+.grid-4{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px;}
+@media(min-width:600px){.grid-4{grid-template-columns:repeat(3,1fr);}}
+@media(min-width:800px){.grid-4{grid-template-columns:repeat(4,1fr);}}
+
+.field-group{display:flex;flex-direction:column;gap:4px;}
+label{font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-weight:600;}
+input,select,textarea{
+  background:var(--input-bg);border:1px solid var(--border);border-radius:4px;
+  color:var(--text);font-family:'Share Tech Mono',monospace;font-size:13px;
+  padding:7px 10px;width:100%;outline:none;transition:border-color 0.2s;
+}
+input:focus,select:focus,textarea:focus{border-color:var(--accent2);}
+select option{background:var(--panel);}
+
+.section-title{
+  font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;
+  color:var(--accent2);margin-bottom:10px;display:flex;align-items:center;gap:8px;
+}
+.section-title::after{content:'';flex:1;height:1px;background:var(--border);}
+
+/* Tubing Spec Blocks */
+.spec-blocks{display:grid;grid-template-columns:repeat(1,1fr);gap:10px;margin-bottom:16px;}
+@media(min-width:700px){.spec-blocks{grid-template-columns:repeat(3,1fr);}}
+
+.spec-block{
+  background:var(--panel);border:1px solid var(--border);border-radius:6px;padding:12px;
+  transition:border-color 0.2s;
+}
+.spec-block.selected{border-color:var(--accent2);}
+.spec-block-header{display:flex;align-items:center;gap:8px;margin-bottom:10px;}
+.spec-block-header input[type="checkbox"]{width:16px;height:16px;cursor:pointer;accent-color:var(--accent2);}
+.spec-block-label{font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:1px;color:var(--text);font-weight:600;}
+.spec-inner{display:grid;grid-template-columns:1fr 1fr;gap:7px;}
+.spec-inner .field-group label{font-size:9px;}
+
+/* Quick Entry */
+.joint-input-panel{
+  background:var(--panel);border:1px solid var(--border);border-radius:8px;
+  padding:14px 16px;margin-bottom:16px;
+  display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+}
+.joint-counter-display{display:flex;flex-direction:column;align-items:center;min-width:70px;}
+.joint-num-label{font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);margin-bottom:2px;font-family:'Exo 2',sans-serif;font-weight:600;}
+.joint-num-big{font-family:'Rajdhani',sans-serif;font-size:44px;font-weight:700;color:var(--accent);line-height:1;transition:color 0.1s;}
+@keyframes blinkAnim{0%,100%{opacity:1;color:var(--accent);}25%{opacity:0.1;color:#fff;}50%{opacity:1;color:#fff;}75%{opacity:0.1;color:var(--accent);}}
+.joint-num-big.blink{animation:blinkAnim 0.6s ease;}
+.joint-inputs-row{display:flex;gap:10px;flex-wrap:wrap;flex:1;align-items:flex-end;}
+.ji-group{display:flex;flex-direction:column;gap:4px;}
+.ji-group input{font-size:15px;padding:9px 12px;}
+.btn-add-joint{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:14px;letter-spacing:2px;
+  text-transform:uppercase;background:var(--accent);color:#0a0e14;border:none;
+  border-radius:5px;padding:10px 20px;cursor:pointer;transition:background 0.2s;white-space:nowrap;align-self:flex-end;
+}
+.btn-add-joint:hover{background:#ffb820;}
+.btn-clear-all{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;
+  text-transform:uppercase;background:transparent;color:var(--danger);border:1px solid var(--danger);
+  border-radius:4px;padding:10px 14px;cursor:pointer;transition:all 0.2s;white-space:nowrap;align-self:flex-end;
+}
+.btn-clear-all:hover{background:var(--danger);color:#fff;}
+
+/* Special Panel */
+.special-panel{background:#110d20;border:1px solid #2e1f4a;border-left:3px solid var(--special);border-radius:8px;padding:14px 16px;margin-bottom:16px;}
+.special-title{font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--special);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.special-title::after{content:'';flex:1;height:1px;background:#2e1f4a;}
+.special-input-row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;}
+.si-group{display:flex;flex-direction:column;gap:4px;}
+.si-group label{color:#9f7fd4;}
+.si-group input{background:#0d0a18;border-color:#2e1f4a;font-size:13px;}
+.si-group input:focus{border-color:var(--special);}
+.btn-add-special{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;
+  text-transform:uppercase;background:transparent;color:var(--special);border:1px solid var(--special);
+  border-radius:4px;padding:9px 14px;cursor:pointer;transition:all 0.2s;align-self:flex-end;white-space:nowrap;
+}
+.btn-add-special:hover{background:var(--special);color:#0a0e14;}
+
+/* Table */
+.tally-table-wrap{overflow-x:auto;margin-bottom:12px;}
+table{width:100%;border-collapse:collapse;font-family:'Share Tech Mono',monospace;font-size:13px;min-width:500px;}
+thead th{background:#0d1520;border:1px solid var(--border);padding:7px 8px;text-align:center;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);font-family:'Exo 2',sans-serif;font-weight:600;white-space:nowrap;}
+thead th.sl-th{width:50px;}
+tbody tr{transition:background 0.15s;}
+tbody tr:hover{background:#151f2d;}
+tbody tr.special-row{background:#110d20;}
+tbody tr.special-row:hover{background:#160e28;}
+tbody td{border:1px solid var(--border);padding:5px 7px;text-align:center;vertical-align:middle;}
+.sl-col{color:var(--muted);font-size:11px;width:50px;}
+.serial-col{color:var(--text);text-align:left;padding-left:8px;}
+.serial-col.sp{color:var(--special);font-style:italic;}
+.len-col{color:var(--green);}
+.od-col{color:#60c8e8;}
+.id-col{color:#f9a26c;}
+.cum-col{color:var(--accent);font-weight:700;}
+.rem-col{color:var(--muted);font-size:12px;text-align:left;padding-left:8px;}
+.del-btn{background:none;border:none;color:var(--danger);cursor:pointer;font-size:14px;padding:2px 5px;opacity:0.4;transition:opacity 0.2s;}
+.del-btn:hover{opacity:1;}
+
+/* Action buttons */
+.action-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px;}
+.act-btn{
+  font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:2px;
+  text-transform:uppercase;border-radius:4px;padding:8px 16px;cursor:pointer;transition:all 0.2s;border:1px solid;
+}
+.btn-csv{background:transparent;border-color:var(--green);color:var(--green);}
+.btn-csv:hover{background:var(--green);color:#0a0e14;}
+.btn-printa4{background:transparent;border-color:var(--accent2);color:var(--accent2);}
+.btn-printa4:hover{background:var(--accent2);color:#0a0e14;}
+.btn-pdf{background:var(--accent);border-color:var(--accent);color:#0a0e14;}
+.btn-pdf:hover{background:#ffb820;border-color:#ffb820;}
+
+/* Remarks */
+textarea{resize:vertical;min-height:60px;}
+
+/* Backup/Restore panel */
+.backup-panel{background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:20px;max-width:600px;}
+.backup-panel h3{font-family:'Rajdhani',sans-serif;font-size:16px;letter-spacing:2px;color:var(--accent2);margin-bottom:14px;}
+.backup-row{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;align-items:center;}
+.bk-btn{font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;border-radius:4px;padding:9px 18px;cursor:pointer;transition:all 0.2s;border:1px solid;}
+.bk-export{background:var(--accent);border-color:var(--accent);color:#0a0e14;}
+.bk-export:hover{background:#ffb820;}
+.bk-import{background:transparent;border-color:var(--accent2);color:var(--accent2);}
+.bk-import:hover{background:var(--accent2);color:#0a0e14;}
+.bk-note{font-size:12px;color:var(--muted);font-family:'Share Tech Mono',monospace;}
+
+/* page views */
+.page{display:none;}
+.page.active{display:block;}
+
+/* ===== PRINT STYLES ===== */
+@media print{
+  @page{size:A4;margin:15mm 15mm 18mm 15mm;}
+  body{background:#fff;color:#000;font-family:Arial,sans-serif;}
+  .top-nav,.tally-tabs-bar,.joint-input-panel,.special-panel,.action-row,.backup-panel,
+  .del-btn,#remarksSection,.nav-btn,.unit-toggle{display:none!important;}
+  #enableCorrection,label[for="enableCorrection"],#correctionPanel{display:none!important;}
+  /* hide the Enable Data Correction wrapper div */
+  #tbgApp div:has(>#enableCorrection){display:none!important;}
+  .main-content{padding:0;}
+  h1,.app-title{color:#000;font-family:Arial,sans-serif;}
+  .print-header{display:block!important;}
+  table{font-family:Arial,sans-serif;font-size:11px;min-width:unset;}
+  thead th{background:#eee!important;color:#333!important;border-color:#999!important;font-family:Arial,sans-serif;}
+  tbody td{border-color:#bbb!important;font-family:Arial,sans-serif;}
+  .cum-col{color:#000!important;font-weight:bold;}
+  .special-row{background:#f5f0ff!important;}
+  .serial-col.sp{color:#555!important;font-style:italic;}
+  .section-title{color:#000!important;font-family:Arial,sans-serif;}
+  .spec-blocks{display:grid!important;grid-template-columns:repeat(3,1fr)!important;}
+  .spec-block{border:1px solid #ccc!important;background:#fafafa!important;}
+  .spec-block:not(.selected){display:none!important;}
+  .spec-block.selected{display:block!important;}
+  .spec-block-label{font-family:Arial,sans-serif;color:#000;}
+  .spec-inner .field-group label{color:#555;font-family:Arial,sans-serif;}
+  input,select{background:transparent!important;border:none!important;color:#000!important;font-family:Arial,sans-serif;}
+  .well-print-grid{display:grid!important;grid-template-columns:repeat(3,1fr)!important;}
+  .tbg-print-footer{display:block!important;position:fixed;bottom:4mm;left:0;right:0;text-align:center;font-size:7.5px;color:#555;font-family:Arial,sans-serif;border-top:1px solid #ccc;padding-top:2px;}
+  .tbg-page-num{display:block!important;position:fixed;top:4mm;right:6mm;font-size:9px;color:#333;font-family:Arial,sans-serif;}
+}
+.print-header{display:none;}
+
+
+
+:root{
+  --bg:#10120f;--panel:#141614;--border:#232923;--accent:#e8a000;
+  --green:#55c255;--red:#c44;--text:#cfd8cc;--muted:#596856;
+  --mono:'Share Tech Mono',monospace;--cond:'Barlow Condensed',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+#dpApp{min-height:100vh;background:var(--bg);color:var(--text);font-family:var(--mono);}
+
+/* TOPBAR */
+#dpApp .topbar{background:#090b08;border-bottom:2px solid var(--accent);padding:8px 14px;display:flex;align-items:center;gap:10px;position:sticky;top:0;z-index:200;flex-wrap:wrap;}
+#dpApp .logo{border:1px solid var(--accent);color:var(--accent);padding:3px 7px;font-size:10px;letter-spacing:3px;}
+#dpApp .topbar h1{font-family:var(--cond);font-weight:900;font-size:20px;letter-spacing:2px;color:#fff;text-transform:uppercase;}
+#dpApp .spacer{flex:1;}
+.topbar-btns{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.btn-sm{font-family:var(--mono);font-size:11px;padding:5px 11px;cursor:pointer;border:1px solid var(--muted);background:transparent;color:var(--muted);letter-spacing:1px;transition:all .15s;white-space:nowrap;}
+.btn-sm:hover{border-color:var(--accent);color:var(--accent);}
+.btn-sm.green{border-color:var(--green);color:var(--green);}
+.btn-sm.green:hover{background:var(--green);color:#000;}
+.btn-sm.orange{border-color:var(--accent);color:var(--accent);}
+.btn-sm.orange:hover{background:var(--accent);color:#000;}
+.save-dot{width:8px;height:8px;border-radius:50%;background:var(--green);display:inline-block;margin-left:4px;}
+.save-dot.saving{background:var(--accent);}
+
+/* TABS */
+#dpApp .tab-bar{background:#0a0c09;border-bottom:1px solid var(--border);display:flex;align-items:stretch;overflow-x:auto;gap:2px;padding:0 8px;}
+#dpApp .tab{font-family:var(--mono);font-size:12px;padding:8px 14px;cursor:pointer;border:none;background:transparent;color:var(--muted);letter-spacing:1px;border-bottom:2px solid transparent;white-space:nowrap;display:flex;align-items:center;gap:6px;transition:all .15s;}
+#dpApp .tab:hover{color:var(--text);}
+#dpApp .tab.active{color:var(--accent);border-bottom-color:var(--accent);}
+#dpApp .tab .xtab{color:var(--muted);font-size:13px;padding:0 2px;background:none;border:none;cursor:pointer;}
+.tab .xtab:hover{color:var(--red);}
+#dpApp .tab-new{font-family:var(--mono);font-size:20px;padding:2px 12px;cursor:pointer;border:none;background:transparent;color:var(--green);opacity:.7;align-self:center;}
+.tab-new:hover{opacity:1;}
+
+#dpApp .container{max-width:960px;margin:0 auto;padding:16px 12px;}
+
+/* BACKUP BANNER */
+.backup-banner{background:#1a1400;border:1px solid var(--accent);border-left:3px solid var(--accent);padding:10px 14px;margin-bottom:14px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;}
+.backup-banner span{font-size:11px;color:var(--accent);letter-spacing:1px;flex:1;}
+.bb-btns{display:flex;gap:8px;}
+
+/* PANELS */
+.setup-panel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--accent);padding:14px 16px;margin-bottom:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;}
+.input-panel{background:var(--panel);border:1px solid var(--border);border-left:3px solid var(--green);padding:12px 16px;margin-bottom:14px;display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;}
+
+/* FIELDS — no oninput re-render; use onblur/onchange for structural */
+.field{display:flex;flex-direction:column;gap:4px;}
+.field label{font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;}
+.field input[type=text],.field input[type=number]{background:#0d0f0c;border:1px solid var(--border);color:var(--text);font-family:var(--mono);font-size:14px;padding:6px 10px;outline:none;transition:border .2s;}
+.field input:focus{border-color:var(--accent);}
+.w200 input{width:200px;}.w120 input{width:120px;}.w80 input{width:80px;}.w70 input{width:70px;}
+.check-row{display:flex;align-items:center;gap:7px;cursor:pointer;}
+.check-row input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;}
+.check-row span{font-size:12px;color:#FF9800;}
+.unit-toggle{display:flex;}
+.unit-btn{font-family:var(--mono);font-size:11px;padding:6px 12px;cursor:pointer;border:1px solid var(--border);background:transparent;color:var(--muted);transition:all .15s;}
+.unit-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
+.err-msg{font-size:10px;color:var(--red);min-height:14px;margin-top:2px;letter-spacing:1px;}
+
+/* PIPE NUMBER BOX */
+.pipe-num-box{background:#0d0f0c;border:2px solid var(--accent);color:var(--accent);font-family:var(--mono);font-size:22px;font-weight:bold;padding:6px 14px;min-width:60px;text-align:center;letter-spacing:2px;display:block;}
+@keyframes dpBlinkBorder{0%,100%{border-color:var(--accent);}50%{border-color:transparent;}}
+.pipe-num-box.blink{animation:dpBlinkBorder 0.45s ease-in-out 3;}
+
+/* BUTTONS */
+.btn{font-family:var(--mono);font-size:12px;letter-spacing:1px;padding:8px 16px;cursor:pointer;border:none;transition:all .15s;text-transform:uppercase;}
+.btn-add{background:var(--green);color:#000;font-weight:bold;}
+.btn-add:hover{background:#7aff7a;}
+.btn-clear{background:transparent;border:1px solid var(--red);color:var(--red);}
+.btn-clear:hover{background:var(--red);color:#fff;}
+.btn-dl{background:var(--accent);color:#000;font-weight:bold;}
+.btn-dl:hover{background:#ffc533;}
+.btn-pdf{background:#5577ff;color:#fff;font-weight:bold;}
+.btn-pdf:hover{background:#7799ff;}
+.btn-print{background:transparent;border:1px solid var(--muted);color:var(--muted);}
+.btn-print:hover{border-color:var(--accent);color:var(--accent);}
+
+/* SPEC BAR */
+.spec-bar{font-size:11px;color:var(--accent);letter-spacing:1px;padding:3px 0 10px;display:none;}
+
+/* TABLE — screen */
+.table-wrap{overflow-x:auto;}
+#dpApp table{width:100%;border-collapse:collapse;font-family:var(--mono);font-size:12px;}
+#dpApp thead tr{background:#090b08;border-bottom:2px solid var(--accent);}
+#dpApp thead th{padding:8px 8px;text-align:center;color:var(--accent);font-size:9px;letter-spacing:1px;text-transform:uppercase;word-break:break-word;white-space:normal;}
+th.th-sno{width:75px;}
+#dpApp tbody tr{border-bottom:1px solid #1e221d;transition:background .1s;}
+#dpApp tbody tr:hover{background:#1a1e19;}
+#dpApp tbody tr.sfirst{border-top:2px solid var(--accent);}
+#dpApp tbody td{padding:6px 8px;text-align:center;vertical-align:middle;word-break:break-word;}
+td.sl{color:var(--muted);font-size:11px;}
+td.len{color:#fff;font-weight:bold;font-size:13px;}
+td.cum{color:var(--green);}
+td.bha{color:var(--accent);}
+td.wt{color:#88ccff;}
+td.sno{color:var(--accent);font-weight:bold;width:75px;}
+th.th-sl{width:38px;}
+td.sl-cell{width:38px;}
+td.del-cell{width:26px;}
+td.rem-dp{color:#9ab899;font-size:11px;text-align:left;min-width:80px;cursor:text;}
+td.rem-dp:focus{outline:1px solid #55c255;}
+.btn-del{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:13px;padding:1px 4px;font-family:var(--mono);}
+.btn-del:hover{color:var(--red);}
+.empty-row td{text-align:center;padding:30px;color:#3a4238;font-size:11px;letter-spacing:2px;}
+
+/* SUMMARY */
+.summary{display:none;flex-wrap:wrap;gap:8px;margin-top:12px;}
+.sum-card{background:var(--panel);border:1px solid var(--border);padding:10px 14px;flex:1;min-width:110px;}
+.sum-label{font-size:9px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:3px;}
+.sum-val{font-size:18px;font-weight:bold;}
+.sv-text{color:var(--text);}.sv-acc{color:var(--accent);}.sv-green{color:var(--green);}.sv-blue{color:#88ccff;}
+
+#dpApp .action-row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;}
+#fileInput{display:none;}
+
+/* ===== PRINT ===== */
+@media print{
+  @page{size:A4 portrait;margin:12mm 10mm 18mm 10mm;}
+  #dpApp{background:#fff!important;color:#000!important;font-family:Arial,sans-serif!important;}
+  .topbar,.tab-bar,.setup-panel,.input-panel,.action-row,.backup-banner,.err-msg,.pipe-num-box,.no-print{display:none!important;}
+  #dpApp [id^="dpEnableCorrection"],#dpApp [for="dpEnableCorrection"],#dpApp #dpCorrectionPanel,
+  label[for="dpEnableCorrection"]{display:none!important;}
+  /* Hide correction row (checkbox + label wrapper div) */
+  #dpApp div:has(>#dpEnableCorrection){display:none!important;}
+  #dpApp .container{max-width:100%;padding:0;}
+  #dpApp .print-header{display:block!important;}
+  .spec-bar{display:block!important;color:#000!important;font-size:11px;font-family:Arial,sans-serif!important;padding:2px 0 8px;}
+
+  /* TABLE */
+  #dpApp table{font-size:11px;border-collapse:collapse!important;width:100%;font-family:Arial,sans-serif!important;table-layout:fixed;}
+  table, thead th, #dpApp tbody td{border:1px solid #000!important;}
+  #dpApp thead tr{background:#ddd!important;}
+  #dpApp thead th{
+    color:#000!important;font-size:10px;padding:6px 5px;background:#ddd!important;
+    font-weight:bold;font-family:Arial,sans-serif!important;
+    word-break:break-word;white-space:normal;vertical-align:middle;
+  }
+  th.th-sl{width:30px!important;}
+  th.th-sno{width:60px!important;}
+  th.th-slen{width:80px!important;}
+  th.th-len{width:80px!important;}
+  th.th-rem{width:90px!important;}
+  #dpApp tbody td{
+    padding:5px;color:#000!important;vertical-align:middle;
+    font-size:11px;font-family:Arial,sans-serif!important;
+    word-break:break-word;white-space:normal;
+  }
+  td.rem-dp{font-size:10px;color:#000!important;word-break:break-word;border:1px solid #000!important;}
+  tbody tr.sfirst td{border-top:2px solid #000!important;}
+  td.len{font-weight:bold;}
+  td.sno{font-weight:bold;}
+  /* Hide delete col */
+  th.del-th,td.del-cell{display:none!important;}
+
+  /* SUMMARY */
+  .summary{display:flex!important;flex-wrap:wrap!important;gap:6px!important;margin-top:10px!important;}
+  .sum-card{display:block!important;border:1px solid #000!important;background:#fff!important;padding:7px 10px!important;flex:1!important;min-width:90px!important;}
+  .sum-label{color:#333!important;font-size:9px!important;display:block!important;margin-bottom:2px!important;font-family:Arial,sans-serif!important;letter-spacing:0!important;}
+  .sum-val{color:#000!important;font-size:14px!important;display:block!important;font-weight:bold!important;font-family:Arial,sans-serif!important;}
+
+  /* FOOTER */
+  .dp-print-footer{display:block!important;position:fixed;bottom:4mm;left:0;right:0;text-align:center;font-size:7.5px;color:#555;font-family:Arial,sans-serif;border-top:1px solid #ccc;padding-top:2px;}
+  .dp-page-num{display:block!important;}
+
+  *{-webkit-print-color-adjust:exact;print-color-adjust:exact;}
+}
+#dpApp .print-header{display:none;text-align:center;margin-bottom:10px;font-family:Arial,sans-serif;}
+.print-header h2{font-size:18px;font-weight:900;letter-spacing:1px;text-transform:uppercase;}
+.print-header p{font-size:11px;color:#333;margin-top:2px;}
+
+
+/* unit-btn styles unified above */
+
+/* wrong single length input */
+
+@keyframes shake {
+  0% { transform: translateX(0); }
+  20% { transform: translateX(-4px); }
+  40% { transform: translateX(4px); }
+  60% { transform: translateX(-4px); }
+  80% { transform: translateX(4px); }
+  100% { transform: translateX(0); }
+}
+
+@keyframes redBlink {
+  0%,100%{ border-color: red; box-shadow: 0 0 8px red; }
+  50%{ border-color: #ff6666; box-shadow: 0 0 14px #ff3333; background: rgba(255,0,0,0.08); }
+}
+
+.input-error {
+  border: 2px solid red !important;
+  box-shadow: 0 0 8px red;
+  animation: shake 0.3s ease, redBlink 0.4s ease 0.3s 3;
+}
+
+/* ===== HAMBURGER BUTTON ===== */
+.hamburger-btn {
+  background: none; border: none; cursor: pointer;
+  display: flex; flex-direction: column; justify-content: center;
+  gap: 5px; padding: 8px 10px; margin-right: 8px; flex-shrink: 0;
+}
+.hamburger-btn span {
+  display: block; width: 22px; height: 2px;
+  background: var(--accent); border-radius: 2px; transition: background 0.2s;
+}
+.hamburger-btn:hover span { background: #ffb820; }
+
+/* ===== DRAWER OVERLAY ===== */
+#drawerOverlay {
+  display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+  z-index: 2999;
+}
+#drawerOverlay.open { display: block; }
+
+/* ===== SIDE DRAWER (menu list) ===== */
+#sideDrawer {
+  position: fixed; top: 0; left: -300px; width: 260px; height: 100vh;
+  background: #090d14; border-right: 2px solid var(--accent);
+  z-index: 3001; transition: left 0.26s cubic-bezier(.4,0,.2,1);
+  display: flex; flex-direction: column; overflow: hidden;
+}
+#sideDrawer.open { left: 0; }
+.drawer-header {
+  background: #060a10; border-bottom: 2px solid var(--accent);
+  padding: 14px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.drawer-brand { font-family: 'Rajdhani', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 3px; color: var(--accent); text-transform: uppercase; flex: 1; }
+.drawer-close { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 2px 8px; line-height: 1; }
+.drawer-close:hover { color: var(--danger); }
+.drawer-menu { list-style: none; padding: 8px 0; flex: 1; overflow-y: auto; }
+.drawer-menu li button {
+  display: flex; align-items: center; gap: 12px;
+  width: 100%; background: none; border: none; text-align: left;
+  font-family: 'Rajdhani', sans-serif; font-size: 15px; font-weight: 600;
+  letter-spacing: 1.5px; text-transform: uppercase; color: var(--text);
+  padding: 14px 20px; cursor: pointer;
+  border-left: 3px solid transparent; transition: all 0.15s;
+}
+.drawer-menu li button:hover { color: var(--accent); background: #111825; border-left-color: var(--accent); }
+.drawer-menu li .dmenu-icon { font-size: 18px; width: 26px; text-align: center; flex-shrink: 0; }
+.drawer-sep { height: 1px; background: var(--border); margin: 6px 16px; }
+
+/* ===== CONTENT PANEL (slides in from left over drawer) ===== */
+#drawerPanel {
+  position: fixed; top: 0; left: -600px; width: 320px; height: 100vh;
+  background: #0b0f16; border-right: 1px solid var(--border);
+  z-index: 3002; display: flex; flex-direction: column;
+  transition: left 0.26s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+#drawerPanel.open { left: 0; }
+.dpanel-header {
+  background: #060a10; border-bottom: 1px solid var(--border);
+  padding: 13px 16px; display: flex; align-items: center; gap: 10px; flex-shrink: 0;
+}
+.dpanel-title { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--accent2); flex: 1; }
+.dpanel-back { background: none; border: none; color: var(--muted); font-size: 20px; cursor: pointer; padding: 2px 8px; line-height: 1; }
+.dpanel-back:hover { color: var(--accent); }
+.dpanel-body { padding: 14px 16px; flex: 1; overflow-y: auto; }
+.dpanel-section { margin-bottom: 16px; }
+.dpanel-section h4 {
+  font-family: 'Rajdhani', sans-serif; font-size: 11px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--accent); margin-bottom: 6px;
+  display: flex; align-items: center; gap: 8px;
+}
+.dpanel-section h4::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+.dpanel-section p { font-size: 11px; color: var(--text); line-height: 1.7; font-family: 'Share Tech Mono', monospace; margin: 0; }
+.dpanel-section ul { padding-left: 14px; margin: 4px 0; }
+.dpanel-section li { font-size: 11px; color: var(--text); line-height: 1.7; font-family: 'Share Tech Mono', monospace; margin-bottom: 3px; }
+
+/* Voice toggle */
+.voice-toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--input-bg);
+  margin-bottom: 8px;
+}
+.voice-toggle-label { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: 1px; }
+.voice-toggle-switch {
+  position: relative; width: 42px; height: 22px; flex-shrink: 0;
+}
+.voice-toggle-switch input { opacity: 0; width: 0; height: 0; }
+.vswitch-slider {
+  position: absolute; cursor: pointer; inset: 0;
+  background: #2a3a2a; border-radius: 22px; transition: background 0.2s;
+}
+.vswitch-slider:before {
+  content: ''; position: absolute; height: 16px; width: 16px;
+  left: 3px; bottom: 3px; background: #fff; border-radius: 50%;
+  transition: transform 0.2s;
+}
+.voice-toggle-switch input:checked + .vswitch-slider { background: var(--green); }
+.voice-toggle-switch input:checked + .vswitch-slider:before { transform: translateX(20px); }
+
+/* Theme radio buttons */
+.theme-option {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--border); background: var(--input-bg);
+  margin-bottom: 8px; transition: border-color 0.15s;
+}
+.theme-option:hover { border-color: var(--accent2); }
+.theme-option input[type=radio] { accent-color: var(--accent); width: 16px; height: 16px; flex-shrink: 0; cursor: pointer; }
+.theme-option-label { font-family: 'Rajdhani', sans-serif; font-size: 14px; font-weight: 600; color: var(--text); letter-spacing: 1px; }
+
+/* About info */
+.about-row { display: flex; flex-direction: column; gap: 2px; margin-bottom: 12px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+.about-row:last-child { border-bottom: none; }
+.about-lbl { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); font-family: 'Exo 2', sans-serif; }
+.about-val { font-size: 12px; color: var(--text); font-family: 'Share Tech Mono', monospace; word-break: break-word; }
+
+@media print {
+  #sideDrawer, #drawerOverlay, #drawerPanel, .hamburger-btn { display: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- LAUNCHER -->
+<div id="launcher">
+  <div class="lbox">
+    <div class="l-brand">⚙ Field Operations Tool</div>
+    <div class="l-title">Tally Maker</div>
+    <div class="l-tag">© Abu Sayeed · Driller · Drilling Division, BAPEX, Dhaka, Email: sayeed1bapex@gmail.com</div>
+    <div class="l-opts">
+      <label class="l-opt sel" id="optTbg" onclick="selOpt('tbg')">
+        <input type="radio" name="ac" value="tbg" checked>
+        <div class="l-icon">🔧</div>
+        <div>
+          <div class="l-name">Tubing / Casing Tally</div>
+          <div class="l-desc">Multi-spec · OD/ID · Makeup torque · PDF export</div>
+        </div>
+      </label>
+      <label class="l-opt" id="optDp" onclick="selOpt('dp')">
+        <input type="radio" name="ac" value="dp">
+        <div class="l-icon">🛢</div>
+        <div>
+          <div class="l-name">Drill Pipe Tally</div>
+          <div class="l-desc">Pipe lengths · Stand grouping · BHA · CSV export</div>
+        </div>
+      </label>
+    </div>
+    <button class="l-ok" onclick="launchApp()">&#9654; &nbsp; OK — Open Selected App</button>
+    <div class="l-foot">
+      © Abu Sayeed &nbsp;|&nbsp; Driller &nbsp;|&nbsp; Drilling Division, BAPEX, Dhaka &nbsp;|&nbsp;Email:sayeed1bapex@gmail.com
+    </div>
+  </div>
+</div>
+
+<!-- SIDE DRAWER OVERLAY -->
+<div id="drawerOverlay" onclick="closeDrawer()"></div>
+
+<!-- SIDE DRAWER -->
+<div id="sideDrawer">
+  <div class="drawer-header">
+    <span class="drawer-brand">⚙ Menu</span>
+    <button class="drawer-close" onclick="closeDrawer()">✕</button>
+  </div>
+  <ul class="drawer-menu">
+    <li><button onclick="openPanel('instructions')"><span class="dmenu-icon">📖</span>Instructions</button></li>
+    <li><button onclick="openPanel('settings')"><span class="dmenu-icon">⚙</span>Settings</button></li>
+    <div class="drawer-sep"></div>
+    <li><button onclick="openPanel('about')"><span class="dmenu-icon">ℹ</span>About</button></li>
+  </ul>
+</div>
+
+<!-- DRAWER PANEL (right side of drawer) -->
+<div id="drawerPanel">
+  <div class="dpanel-header">
+    <button class="dpanel-back" onclick="closePanel()">◀</button>
+    <span class="dpanel-title" id="drawerPanelTitle">Instructions</span>
+  </div>
+  <div class="dpanel-body" id="drawerPanelBody"></div>
+</div>
+
+<!-- APP BAR -->
+<div class="app-bar" id="appBar">
+  <button class="hamburger-btn" onclick="openDrawer()" title="Menu">
+    <span></span><span></span><span></span>
+  </button>
+  <div class="ab-left">
+    <div class="ab-title">⚙ Tally Maker</div>
+    <div class="ab-sub">© Abu Sayeed &nbsp;|&nbsp; Driller &nbsp;|&nbsp; Drilling Division, BAPEX, Dhaka &nbsp;|&nbsp; Email:sayeed1bapex@gmail.com</div>
+  </div>
+  <div class="ab-btns">
+  <div style="display:flex;align-items:center;gap:6px;">
+    
+    <span style="font-size:13px;color:yellow;font-family:'Share Tech Mono',monospace;font-weight:600;">
+      Unit:
+    </span>
+
+    <div class="unit-toggle">
+      <button id="btnM" class="unit-btn active" onclick="globalSetUnit('m')">
+        Meter (m)
+      </button>
+
+      <button id="btnFt" class="unit-btn" onclick="globalSetUnit('ft')">
+        Feet (ft)
+      </button>
+    </div>
+
+  </div>
+</div>
+    <button class="sw-btn" id="swTbg" onclick="switchApp('tbg')">🔧 Tubing / Casing</button>
+    <button class="sw-btn" id="swDp"  onclick="switchApp('dp')">🛢 Drill Pipe</button>
+  </div>
+</div>
+
+<!-- TUBING APP -->
+<div class="app-view" id="tbgApp">
+<div class="tbg-page-num" style="display:none;">Page 1</div>
+<div class="tbg-print-footer" style="display:none;">Generated by Tally Maker App &nbsp;&#124;&nbsp; &copy; All rights reserved Abu Sayeed &nbsp;&#124;&nbsp; E-mail: sayeed1bapex@gmail.com</div>
+<!-- TALLY TABS BAR -->
+<div class="tally-tabs-bar" id="tallyTabsBar"></div>
+
+<!-- ===== TALLY PAGE ===== -->
+<div class="page active" id="pageTally">
+<div class="main-content">
+
+  <!-- TBG Toolbar -->
+  <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-bottom:12px;padding:8px 10px;background:#0d1520;border:1px solid #1e2d42;border-radius:6px;">
+    <button onclick="tbgNewTally()" style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:4px;cursor:pointer;border:1px solid #2d6a4f;background:#0f2a1e;color:#2ec4b6;">+ New Tally</button>
+    <button onclick="tbgSave()" style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:4px;cursor:pointer;border:1px solid #6a4500;background:#2a1e0a;color:#f0a500;">💾 Save</button>
+    <button onclick="tbgBackupJSON()" style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:4px;cursor:pointer;border:1px solid #1a4a1a;background:#0a200a;color:#2ec4b6;">⬇ Backup JSON</button>
+    <button onclick="tbgRestore()" style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:4px;cursor:pointer;border:1px solid #6a4500;background:#2a1e0a;color:#f0a500;">↑ Restore</button>
+    <button onclick="tbgPrint()" style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:4px;cursor:pointer;border:1px solid #1e3a5a;background:#0a1e3a;color:#00b4d8;">🖨 Print / PDF</button>
+    <button onclick="tbgDownloadPDF()" style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:12px;letter-spacing:1.5px;text-transform:uppercase;padding:6px 14px;border-radius:4px;cursor:pointer;border:1px solid #5a1e8a;background:#2a0a4a;color:#c084fc;">⬇ PDF Download</button>
+
+  </div>
+
+  <!-- Well Info -->
+  <div class="section-title" style="margin-bottom:8px;">Well Information</div>
+  <div class="grid-4" id="wellInfoGrid">
+    <div class="field-group"><label>Well Name / No.</label><input type="text" id="wellName" placeholder="e.g. WELL-A-01"></div>
+    <div class="field-group"><label>Field / Block</label><input type="text" id="fieldName" placeholder="e.g. Rashidpur"></div>
+    <div class="field-group"><label>Rig / Unit</label><input type="text" id="rig" placeholder="e.g. WO-Rig #3"></div>
+    <div class="field-group"><label>Date</label><input type="date" id="opDate"></div>
+    <div class="field-group">
+      <label>Operation Type</label>
+      <select id="opType">
+        <option value="">-- Select --</option>
+        <option>RIH (Run In Hole)</option>
+        <option>POOH (Pull Out of Hole)</option>
+        <option>Workover</option>
+        <option>Completion</option>
+        <option>Re-Perforation</option>
+        <option>Other</option>
+      </select>
+    </div>
+    <div class="field-group"><label>Driller / Operator</label><input type="text" id="driller" placeholder="Name"></div>
+    <div class="field-group"><label>Prepared by</label><input type="text" id="tallyMan" placeholder="Name"></div>
+  </div>
+
+  <!-- Tubing Specifications -->
+  <div class="section-title">Tubing Specifications</div>
+  <div class="spec-blocks" id="specBlocks">
+    <!-- 3 spec blocks rendered by JS -->
+  </div>
+
+  <!-- Enable Data Correction checkbox -->
+  <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;">
+    <input type="checkbox" id="enableCorrection" onchange="toggleCorrectionPanel()" style="width:16px;height:16px;cursor:pointer;accent-color:var(--green);">
+    <label for="enableCorrection" style="font-size:11px;letter-spacing:1.5px;text-transform:uppercase; color:#FF9800;cursor:pointer;font-weight:600;">Enable Data Correction</label>
+  </div>
+  <div id="correctionPanel" style="display:none;background:#0f1a10;border:1px solid #1e3a1e;border-left:3px solid var(--green);border-radius:8px;padding:14px 16px;margin-bottom:16px;">
+    <div style="font-family:'Rajdhani',sans-serif;font-size:13px;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:12px;display:flex;align-items:center;gap:8px;">
+      🔧 Data Correction
+      <span style="flex:1;height:1px;background:#1e3a1e;display:block;"></span>
+    </div>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;">
+      <div class="field-group">
+        <label style="color:#6dbf7e;">Single No (Joint #)</label>
+        <input type="number" id="corr_jointNo" min="1" step="1" placeholder="e.g. 1" style="width:120px;background:#0a130b;border-color:#1e3a1e;">
+      </div>
+      <div class="field-group">
+        <label style="color:#6dbf7e;">New Length (<span id="corrUnitLabel">m</span>)</label>
+        <input type="number" id="corr_newLen" step="0.001" min="0" placeholder="e.g. 9.00-13.99" style="width:140px;background:#0a130b;border-color:#1e3a1e;">
+      </div>
+      <button onclick="applyCorrection()" style="font-family:'Rajdhani',sans-serif;font-weight:700;font-size:13px;letter-spacing:2px;text-transform:uppercase;background:var(--green);color:#0a0e14;border:none;border-radius:4px;padding:9px 20px;cursor:pointer;align-self:flex-end;">✔ Apply</button>
+    </div>
+    <div id="corrMsg" style="font-family:'Share Tech Mono',monospace;font-size:12px;margin-top:8px;color:var(--green);"></div>
+  </div>
+
+  <!-- Quick Entry -->
+  <div class="section-title">Quick Joint Entry</div>
+  <div class="joint-input-panel">
+    <div class="joint-counter-display">
+      <div class="joint-num-label">Joint #</div>
+      <div class="joint-num-big" id="nextJointNum">1</div>
+    </div>
+    <div class="joint-inputs-row">
+      <div class="ji-group">
+        <label id="lenLabel">Tubing Length (m)</label>
+<input type="number" id="qi_len"
+       step="0.001"
+       min="9"
+       max="13.99"
+       placeholder="9.00 - 13.99"
+       style="width:160px;"
+       onkeydown="if(event.key==='Enter') addTubingRow()">
+             </div>
+      <button class="btn-add-joint" onclick="addTubingRow()">▶ Add Joint</button>
+      <button class="btn-clear-all" onclick="clearAllRows()">✕ Clear All</button>
+    </div>
+  </div>
+
+  <!-- Special Items -->
+  <div class="special-panel">
+    <div class="special-title">⬡ Special Items (Crossover / Sub / Nipple / Other)</div>
+    <div class="special-input-row">
+      <div class="si-group">
+          <label>Item Name</label>
+          <input type="text" id="si_name" placeholder="e.g. Crossover Sub" style="min-width:150px;">
+          </div>
+      <div class="si-group">
+          <label id="siLenLabel">
+              Length (m)</label>
+              <input type="number" id="si_len" step="0.001" min="0" placeholder="0.300" style="width:100px;" onkeydown="if(event.key==='Enter') addSpecialRow()">
+              </div>
+      <div class="si-group">
+          <label>OD (in)</label>
+          <input type="text" id="si_od" placeholder="e.g. 2.875" style="width:90px;">
+          </div>
+      <div class="si-group">
+          <label>ID (in)</label>
+          <input type="text" id="si_id" placeholder="e.g. 2.000" style="width:90px;">
+          </div>
+      <div class="si-group">
+          <label>Remarks</label>
+          <input type="text" id="si_remarks" placeholder="Optional" style="min-width:120px;"></div>
+      <button class="btn-add-special" onclick="addSpecialRow()">＋ Add</button>
+    </div>
+  </div>
+
+  <!-- Tally Log -->
+  <div class="section-title">Tally Log</div>
+  <div class="tally-table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th class="sl-th">Tubing<br>SL No</th>
+          <th>Item / Description</th>
+          <th id="thLen">Length (m)</th>
+          <th>OD (in)</th>
+          <th>ID (in)</th>
+          <th id="thCum">Cum. Length (m)</th>
+          <th>Remarks</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="tallyBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Export actions -->
+  <div class="action-row">
+    <button class="act-btn btn-csv" onclick="exportCSV()">⬇ CSV Export</button>
+  </div>
+
+  <!-- Remarks -->
+  <div id="remarksSection">
+    <div class="section-title">General Remarks</div>
+    <textarea id="remarks" placeholder="Operational notes, anomalies, pressure test results..."></textarea>
+  </div>
+
+</div><!-- main-content -->
+</div><!-- pageTally -->
+
+<!-- ===== BACKUP PAGE ===== -->
+<div class="page" id="pageBackup">
+<div class="main-content">
+  <div class="section-title">Save &amp; Restore</div>
+  <div class="backup-panel">
+    <h3>Export All Tallies</h3>
+    <div class="backup-row">
+      <button class="bk-btn bk-export" onclick="exportBackup()">⬇ Export Backup (.json)</button>
+      <span class="bk-note">Saves all tally tabs and data to a JSON file.</span>
+    </div>
+    <h3 style="margin-top:16px;">Restore from Backup</h3>
+    <div class="backup-row">
+      <label for="restoreFile" style="text-transform:none;font-size:13px;letter-spacing:0;color:var(--text);cursor:pointer;">
+        <input type="file" id="restoreFile" accept=".json,.html" style="display:none;" onchange="importBackup(event)">
+        <button class="bk-btn bk-import" onclick="document.getElementById('restoreFile').click()">↑ Import Backup (.json)</button>
+      </label>
+      <span class="bk-note">This will replace all current tally data.</span>
+    </div>
+    <div id="backupMsg" style="font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--green);margin-top:8px;"></div>
+  </div>
+</div>
+</div>
+</div>
+
+<!-- DRILL PIPE APP -->
+<div class="app-view" id="dpApp">
+  <div class="dp-print-footer" style="display:none;">Generated by Tally Maker App &nbsp;&#124;&nbsp; &copy; All rights reserved Abu Sayeed &nbsp;&#124;&nbsp; E-mail: sayeed1bapex@gmail.com</div>
+  <div class="dp-page-num" style="display:none;position:fixed;top:4mm;right:6mm;font-size:9px;color:#333;font-family:Arial,sans-serif;">Page 1</div>
+  <div class="dp-toolbar">
+    <span class="dp-toolbar-title">&#128736; Drill Pipe Tally</span>
+    <button class="btn-sm orange" onclick="dpNewTally()">+ New</button>
+    <button class="btn-sm orange" onclick="dpSaveHTML()">&#128190; Save</button>
+    <button class="btn-sm" onclick="window.dpBackupJSON&&window.dpBackupJSON()" style="border-color:#2ec4b6;color:#2ec4b6;">&#8595; Backup</button>
+    <button class="btn-sm orange" onclick="document.getElementById('dpFile').click()">&#8679; Restore</button>
+    <button class="btn-sm" onclick="window.print()">&#9113; Print</button>
+    <button class="btn-sm" onclick="window.dpDownloadPDF&&window.dpDownloadPDF()" style="border-color:#c084fc;color:#c084fc;">⬇ PDF</button>
+    <input type="file" id="dpFile" accept=".json,.html" style="display:none" onchange="dpLoadFile(event)">
+  </div>
+  <div class="tab-bar" id="tabBar"></div>
+  <div id="tallyPages"></div>
+</div>
+
+<!-- LAUNCHER + SWITCHER JS -->
+<script>
+var currentApp=null, _tbgReady=false, _dpReady=false;
+
+// Ensure TBG is initialized before any button action
+function tbgEnsureReady(cb){
+  if(_tbgReady){ cb(); return; }
+  _tbgReady=true;
+  setTimeout(function(){ tbgStart(); setTimeout(cb,50); }, 30);
+}
+
+// Safe wrappers for toolbar buttons
+function tbgNewTally(){ tbgEnsureReady(function(){ newTally(); }); }
+function tbgSetUnit(u){ tbgEnsureReady(function(){ setUnit(u); }); }
+function tbgPrint()   { tbgEnsureReady(function(){ printA4(); }); }
+function tbgSave()    { tbgEnsureReady(function(){ exportBackup(); }); }
+function tbgRestore() { tbgEnsureReady(function(){ document.getElementById('restoreFile').click(); }); }
+function tbgBackupJSON(){ tbgEnsureReady(function(){
+  saveTallyUI();
+  function p2(n){return n<10?'0'+n:String(n);}
+  var d=new Date();
+  var payload=JSON.stringify({version:1,app:'tbg',unit:unit,tallies:tallies,savedAt:d.toISOString()},null,2);
+  var blob=new Blob([payload],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='Tubing_Tally_Backup_'+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'_'+p2(d.getHours())+p2(d.getMinutes())+'.json';
+  a.click();
+}); }
+
+function selOpt(v){
+  document.querySelectorAll(".l-opt").forEach(function(o){o.classList.remove("sel");});
+  document.getElementById(v==="tbg"?"optTbg":"optDp").classList.add("sel");
+  document.querySelector("input[name=ac][value="+v+"]").checked=true;
+}
+
+function launchApp(){
+  var v=document.querySelector("input[name=ac]:checked").value;
+  document.getElementById("launcher").style.display="none";
+  document.getElementById("appBar").style.display="flex";
+  switchApp(v);
+}
+
+function switchApp(app){
+  currentApp=app;
+  document.querySelectorAll(".app-view").forEach(function(v){v.classList.remove("active");});
+  document.getElementById(app==="tbg"?"tbgApp":"dpApp").classList.add("active");
+  document.querySelectorAll(".sw-btn").forEach(function(b){b.classList.remove("on");});
+  document.getElementById(app==="tbg"?"swTbg":"swDp").classList.add("on");
+  if(app==="tbg"&&!_tbgReady){_tbgReady=true; setTimeout(function(){tbgStart();},30);}
+  if(app==="dp" &&!_dpReady) {_dpReady=true;  loadDpJS(); }
+}
+
+// ── Global unit toggle — works for both TBG and DP ──────────────
+var _globalUnit = 'm';
+function globalSetUnit(u){
+  _globalUnit = u;
+
+  // Update button UI
+  var bM=document.getElementById('btnM'), bF=document.getElementById('btnFt');
+  if(bM){ bM.classList.toggle('active', u==='m'); }
+  if(bF){ bF.classList.toggle('active', u==='ft'); }
+
+  // ── TBG update (setUnit handles its own conversion guard) ──
+  if(typeof setUnit === 'function' && typeof tallies !== 'undefined'){
+    setUnit(u);
+  }
+
+  // ── DP update ──
+  if(typeof window.dpSetUnit === 'function'){
+    window.dpSetUnit(u);
+  }
+}
+
+function injectAndSave(payload,prefix){
+  var appHTML="<!DOCTYPE html>"+document.documentElement.outerHTML;
+  var bOpen="<"+"script id=\"__boot__\">";
+  var bClose="<"+"/script>";
+  var si=appHTML.indexOf(bOpen);
+  if(si!==-1){var ei=appHTML.indexOf(bClose,si);if(ei!==-1)appHTML=appHTML.slice(0,si)+appHTML.slice(ei+bClose.length);}
+  var boot=bOpen+"window.__SAVED__="+payload+";"+bClose;
+  appHTML=appHTML.replace("</head>",boot+"</head>");
+  var blob=new Blob([appHTML],{type:"text/html;charset=utf-8"});
+  var a=document.createElement("a");
+  a.href=URL.createObjectURL(blob);
+  a.download=prefix+new Date().toISOString().slice(0,10)+".html";
+  a.click();
+}
+
+// DP JS inlined (decoded from original base64)
+var _dpJSLoaded=false;
+function loadDpJS(){
+  if(_dpJSLoaded){dpStart();return;}
+  _dpJSLoaded=true;
+  (function(){
+
+// ── Drill Pipe Tally — fully namespaced under window.DP ──────
+(function(){
+  'use strict';
+  var LS_KEY = 'dpTally_v8';
+  var tabs = [];
+  var activeTab = 0;
+  var dpReverseMode = false; // Normal/Reverse toggle
+
+
+function defaultTally(name) {
+  return { id: Date.now()+Math.random(), name:name||'Tally 1', spec:'', bhaEnabled:false, bhaLen:'', pps:2, unit:'m', ppf:'', pipes:[], pipeRemarks:[] };
+}
+
+/* ── LocalStorage ── */
+function lsSave() {
+  try {
+    var d = document.getElementById('saveDot');
+    if (d) d.className = 'save-dot saving';
+    localStorage.setItem(LS_KEY, JSON.stringify({tabs:tabs, activeTab:activeTab}));
+    setTimeout(function(){ var d2=document.getElementById('saveDot'); if(d2) d2.className='save-dot'; }, 600);
+  } catch(e) {}
+}
+function lsLoad() {
+  try { var s=localStorage.getItem(LS_KEY); return s?JSON.parse(s):null; } catch(e){ return null; }
+}
+
+/* ── JSON Backup / Restore ── */
+function saveJSON() {
+  var blob = new Blob([JSON.stringify({tabs:tabs,activeTab:activeTab,savedAt:new Date().toISOString()},null,2)],{type:'application/json'});
+  var a = document.createElement('a'), d = new Date();
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dp_tally_'+d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'_'+pad(d.getHours())+pad(d.getMinutes())+'.json';
+  a.click(); toast('Backup saved!');
+}
+function loadJSON(evt) {
+  var file = evt.target.files[0]; if (!file) return;
+  var r = new FileReader();
+  r.onload = function(e) {
+    try {
+      var data = JSON.parse(e.target.result);
+      if (!data.tabs||!data.tabs.length) throw 0;
+      if (!confirm('Restore korle current data replace hobe. Continue?')) return;
+      tabs=data.tabs; activeTab=data.activeTab||0;
+      if (activeTab>=tabs.length) activeTab=0;
+      lsSave(); renderAll(); toast('Restore OK - '+tabs.length+' tally loaded');
+    } catch(err){ alert('Invalid file!'); }
+    evt.target.value='';
+  };
+  r.readAsText(file);
+}
+function toast(msg) {
+  var t=document.createElement('div');
+  t.style.cssText='position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1a2a1a;border:1px solid #55c255;color:#55c255;font-family:monospace;font-size:11px;padding:8px 18px;z-index:9999;letter-spacing:1px;white-space:nowrap;';
+  t.textContent=msg; document.body.appendChild(t);
+  setTimeout(function(){ if(t.parentNode) document.body.removeChild(t); },3000);
+}
+
+/* ── Init ── */
+  function dpStart(){
+    var s=lsLoad();
+    if (s&&s.tabs&&s.tabs.length){ tabs=s.tabs; activeTab=s.activeTab||0; if(activeTab>=tabs.length) activeTab=0; }
+    else { tabs=[defaultTally('Tally 1')]; activeTab=0; }
+    renderAll();
+  }
+
+/* ── Render ── */
+function renderAll() { renderTabs(); renderPage(activeTab); lsSave(); }
+
+function renderTabs() {
+  var bar=document.getElementById('tabBar'); bar.innerHTML='';
+  for (var i=0; i<tabs.length; i++) {
+    (function(idx){
+      var btn=document.createElement('button');
+      btn.className='tab'+(idx===activeTab?' active':'');
+      var sp=document.createElement('span');
+      sp.textContent=tabs[idx].name; sp.title='Double-click to rename';
+      sp.ondblclick=function(){ renameTab(idx); };
+      btn.appendChild(sp);
+      if (tabs.length>1) {
+        var x=document.createElement('button'); x.className='xtab'; x.textContent='x';
+        x.onclick=function(e){ e.stopPropagation(); closeTab(idx); };
+        btn.appendChild(x);
+      }
+      btn.onclick=function(e){ if(e.target.className==='xtab') return; switchTab(idx); };
+      bar.appendChild(btn);
+    })(i);
+  }
+  var plus=document.createElement('button');
+  plus.className='tab-new'; plus.textContent='+'; plus.title='New Tally'; plus.onclick=newTally;
+  bar.appendChild(plus);
+}
+
+function renderPage(idx) {
+  var t=tabs[idx], ul=t.unit;
+  var pps=Math.max(2,Math.min(3,parseInt(t.pps)||2));
+  var useBHA=t.bhaEnabled, bha=useBHA?(parseFloat(t.bhaLen)||0):0;
+  var ppfVal=parseFloat(t.ppf)||0, showWt=ppfVal>0;
+  var rows=buildRows(t.pipes,pps,t.pipeRemarks||[]), spanMap=buildSpanMap(rows);
+  var nextNum=t.pipes.length+1;
+
+  var h='<div class="container">';
+
+  /* backup banner */
+  h+='<div class="backup-banner"><span>Data auto-saves. <b>&#128190; Backup</b> click kore .json rakhuon. <b>&#128194; Restore</b> diye ferot paben.</span>';
+  h+='<div class="bb-btns"><button class="btn-sm orange" onclick="saveJSON()">&#128190; Backup</button>';
+  h+='<button class="btn-sm" onclick="document.getElementById(\'fileInput\').click()">&#128194; Restore</button></div></div>';
+
+  /* print header */
+  h+='<div class="print-header"><h2>'+esc(t.name)+'</h2><p>'+new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'})+'</p></div>';
+
+  /* spec bar */
+  var sp=[]; if(t.spec)sp.push(esc(t.spec)); if(useBHA&&t.bhaLen)sp.push('BHA: '+fmt(t.bhaLen)+' '+ul); if(t.ppf)sp.push('ppf: '+t.ppf);
+  h+='<div id="specBar" class="spec-bar" style="'+(sp.length?'display:block':'display:none')+'">'+sp.join('   |   ')+'</div>';
+
+  /* setup panel — KEY: all inputs use onblur/onchange, NOT oninput, to avoid re-render on keystroke */
+  h+='<div class="setup-panel">';
+  h+='<div class="field w200"><label>DP Spec</label><input type="text" value="'+escA(t.spec)+'" placeholder="5&quot; 19.5 ppf S-135" onblur="sfNoRender(\'spec\',this.value)"></div>';
+  h+='<div class="field w80"><label>lb/ft (ppf)</label><input type="number" value="'+escA(t.ppf)+'" placeholder="19.5" min="0" step="0.1" inputmode="decimal" onblur="sfPpf(this.value)"></div>';
+  h+='<div class="field"><label>BHA</label><label class="check-row"><input type="checkbox" '+(t.bhaEnabled?'checked':'')+' onchange="sfRender(\'bhaEnabled\',this.checked)"><span>Include BHA</span></label></div>';
+  if (t.bhaEnabled) {
+    h+='<div class="field w120"><label>BHA Length ('+ul+')</label><input type="number" value="'+escA(t.bhaLen)+'" step="0.01" min="0" placeholder="150" inputmode="decimal" onblur="sfNoRender(\'bhaLen\',this.value)"></div>';
+  }
+  h+='<div class="field w70"><label>Pipes/Stand</label><input type="number" value="'+pps+'" min="2" max="3" inputmode="numeric" onblur="sfRender(\'pps\',Math.max(2,Math.min(3,parseInt(this.value)||2)))" onkeydown="if(event.key===\'Enter\'){event.preventDefault();this.blur();}"></div>';
+  h+='</div>';
+
+  /* data correction panel */
+  h+='<div style="margin-bottom:12px;margin-top:14px;display:flex;align-items:center;gap:10px;">';
+  h+='<input type="checkbox" id="dpEnableCorrection" onchange="dpToggleCorrection()" style="width:16px;height:16px;cursor:pointer;accent-color:#55c255;">';
+  h+='<label for="dpEnableCorrection" style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#FF9800;cursor:pointer;font-weight:600;">Enable Data Correction</label>';
+  h+='</div>';
+  h+='<div id="dpCorrectionPanel" style="display:none;background:#0d100d;border:1px solid #1e3a1e;border-left:3px solid #55c255;border-radius:6px;padding:12px 16px;margin-bottom:14px;">';
+  h+='<div style="font-family:monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#55c255;margin-bottom:10px;">Data Correction</div>';
+  h+='<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">';
+  h+='<div class="field"><label>Pipe SL No</label><input type="number" id="dpCorrPipe" min="1" step="1" placeholder="e.g 1" style="width:110px;background:#0a130b;border-color:#1e3a1e;"></div>';
+  h+='<div class="field"><label>New Length ('+ul+')</label><input type="number" id="dpCorrLen" step="0.01" min="9.00" max"9.99" placeholder="e.g 9.00 - 9.99" style="width:140px;background:#0a130b;border-color:#1e3a1e;"></div>';
+  h+='<button class="btn btn-add" style="align-self:flex-end;" onclick="dpApplyCorrection()">Apply</button>';
+  h+='</div>';
+  h+='<div id="dpCorrMsg" style="font-size:11px;margin-top:8px;color:#55c255;letter-spacing:1px;min-height:16px;"></div>';
+  h+='</div>';
+  /* input panel — singleLen uses onkeydown Enter only, no oninput re-render */
+  h+='<div class="input-panel">';
+  h+='<div style="display:flex;gap:10px;align-items:flex-end;">';
+  h+='<div class="field w120"><label>Single Length ('+ul+')</label>';
+  h+='<input type="number" id="singleLen" step="0.01" placeholder="9.00 - 9.99" inputmode="decimal" oninput="validateLen()" onkeydown="if(event.key===\'Enter\'){event.preventDefault();addPipe();}">';
+  h+='<div class="err-msg" id="errMsg"></div></div>';
+  h+='<div class="field"><label>Pipe No</label><div class="pipe-num-box" id="pipeNumBox">'+nextNum+'</div></div>';
+  h+='</div>';
+  h+='<div style="display:flex;gap:8px;align-items:center;padding-bottom:18px;">';
+  h+='<button class="btn btn-add" onclick="addPipe()">+ Add Pipe</button>';
+  h+='<button class="btn btn-clear" onclick="clearAll()">x Clear All</button>';
+  h+='</div></div>';
+
+  /* table */
+  h+='<div class="no-print" style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">';
+  h+='<button onclick="dpToggleReverse()" id="dpReverseBtn" style="font-family:var(--mono);font-size:11px;padding:5px 12px;cursor:pointer;border:1px solid '+(dpReverseMode?'#e8a000':'#596856')+';background:'+(dpReverseMode?'#2a1e00':'transparent')+';color:'+(dpReverseMode?'#e8a000':'#596856')+';letter-spacing:1px;transition:all .15s;white-space:nowrap;">'+(dpReverseMode?'⇅ REVERSE MODE':'⇅ NORMAL MODE')+'</button>';
+  h+='<span style="font-size:10px;color:#596856;letter-spacing:1px;">'+(dpReverseMode?'Showing: Last → First':'Showing: First → Last')+'</span>';
+  h+='</div>';
+  h+='<div class="table-wrap"><table><thead><tr>';
+  h+='<th class="th-sl">SL No</th>';
+  h+='<th class="th-len">Single Length ('+ul+')</th>';
+  h+='<th class="th-sno">Stand No</th>';
+  h+='<th class="th-slen">Stand Length ('+ul+')</th>';
+  h+='<th>Cum Length ('+ul+')</th>';
+  if (useBHA) h+='<th>BHA+Cum ('+ul+')</th>';
+  if (showWt)  h+='<th class="th-wt">Cum Wt (klb)</th>';
+  h+='<th class="th-rem">Remarks</th>';
+  h+='<th class="del-th"></th></tr></thead><tbody>';
+
+  if (rows.length===0) {
+    var cols=7+(useBHA?1:0)+(showWt?1:0);
+    h+='<tr class="empty-row"><td colspan="'+cols+'">NO PIPES FOUND - PLEASE INPUT LENGTH AND PRESS ENTER</td></tr>';
+  } else {
+    // In reverse mode: rebuild rows using reversed pipe lengths so ALL columns recalculate correctly
+    var displayPipes = dpReverseMode ? t.pipes.slice().reverse() : t.pipes;
+    var displayRemarks = dpReverseMode ? (t.pipeRemarks||[]).slice().reverse() : (t.pipeRemarks||[]);
+    var rows = buildRows(displayPipes, pps, displayRemarks);
+    var spanMap = buildSpanMap(rows);
+    for (var i=0; i<rows.length; i++) {
+      var r=rows[i], wtVal='';
+      if (showWt){ var lf=ul==='m'?r.cum*3.28084:r.cum; wtVal=fmt(lf*ppfVal/1000); }
+      var tc = (r.isFirst && i>0) ? ' class="sfirst"' : '';
+      // origIdx for delete/remarks: reverse back to original index
+      var origIdx = dpReverseMode ? (t.pipes.length-1-i) : i;
+      h+='<tr'+tc+'>';
+      h+='<td class="sl sl-cell">'+(i+1)+'</td>';
+      h+='<td class="len">'+fmt(r.len)+'</td>';
+      if (r.isFirst) {
+        var span=spanMap[r.sn]||1;
+        h+='<td class="sno" rowspan="'+span+'">'+r.sn+'</td>';
+        h+='<td class="slen" rowspan="'+span+'">'+(r.slen!=null?fmt(r.slen):'')+'</td>';
+      }
+      h+='<td class="cum">'+fmt(r.cum)+'</td>';
+      if (useBHA) h+='<td class="bha">'+fmt(bha+r.cum)+'</td>';
+      if (showWt){ var lf2=ul==='m'?r.cum*3.28084:r.cum; h+='<td class="wt">'+fmt(lf2*ppfVal/1000)+'</td>'; }
+      h+='<td class="rem-dp" contenteditable="true" onblur="dpSetRem('+origIdx+',this.textContent.trim())" style="min-width:80px;outline:none;border-bottom:1px solid #2a3a2a;color:#9ab899;font-family:var(--mono);font-size:11px;text-align:left;padding:3px 5px;cursor:text;">'+escA(r.rem||'')+'</td>';
+      h+='<td class="del-cell"><button class="btn-del" onclick="deletePipe('+origIdx+')">x</button></td>';
+      h+='</tr>';
+    }
+  }
+  h+='</tbody></table></div>';
+
+  /* summary */
+  if (rows.length>0) {
+    var lastCum=rows[rows.length-1].cum, totalStands=0;
+    for (var j=0; j<rows.length; j++) { if(rows[j].isLast) totalStands++; }
+    var totalWt='';
+    if (showWt){ var lft=ul==='m'?lastCum*3.28084:lastCum; totalWt=fmt(lft*ppfVal/1000); }
+    h+='<div class="summary" style="display:flex;">';
+    h+='<div class="sum-card"><div class="sum-label">Total Singles</div><div class="sum-val sv-text">'+t.pipes.length+'</div></div>';
+    h+='<div class="sum-card"><div class="sum-label">Total Stands</div><div class="sum-val sv-acc">'+totalStands+'</div></div>';
+    h+='<div class="sum-card"><div class="sum-label">Cum. DP Length</div><div class="sum-val sv-green">'+fmt(lastCum)+' '+ul+'</div></div>';
+    if (useBHA) h+='<div class="sum-card"><div class="sum-label">BHA + Cum</div><div class="sum-val sv-acc">'+fmt(bha+lastCum)+' '+ul+'</div></div>';
+    if (showWt)  h+='<div class="sum-card"><div class="sum-label">Total Pipe Wt</div><div class="sum-val sv-blue">'+totalWt+' klb</div></div>';
+    h+='</div>';
+  }
+
+  h+='<div class="action-row">';
+  h+='<button class="btn btn-dl" onclick="downloadCSV()">&#8595; CSV</button>';
+  h+='<button class="btn btn-pdf" onclick="window.print()">&#8595; PDF</button>';
+  h+='<button class="btn btn-print" onclick="window.print()">&#9113; Print A4</button>';
+  h+='</div></div>';
+
+  document.getElementById('tallyPages').innerHTML=h;
+}
+
+/* ── Data helpers ── */
+function buildRows(pipes,pps,remarks){
+  remarks=remarks||[];
+  var cum=0,acc=0,pip=0,sn=0,rows=[];
+  for (var i=0; i<pipes.length; i++){
+    cum+=pipes[i]; acc+=pipes[i]; pip++;
+    var isFirst=pip===1, isLast=pip===pps||i===pipes.length-1;
+    var rsn=null,rslen=null;
+    if (isLast){ sn++; rsn=sn; rslen=acc; acc=0; pip=0; }
+    rows.push({sl:i+1,len:pipes[i],cum:cum,isFirst:isFirst,isLast:isLast,rsn:rsn,rslen:rslen,rem:remarks[i]||''});
+  }
+  var csn=0,cslen=null;
+  for (var j=rows.length-1; j>=0; j--){
+    if (rows[j].isLast){ csn=rows[j].rsn; cslen=rows[j].rslen; }
+    rows[j].sn=csn; rows[j].slen=cslen;
+  }
+  return rows;
+}
+function buildSpanMap(rows){
+  var map={};
+  for (var i=0; i<rows.length; i++){
+    if (rows[i].isFirst){
+      var c=0;
+      for (var j=i; j<rows.length; j++){ c++; if(rows[j].isLast) break; }
+      map[rows[i].sn]=c;
+    }
+  }
+  return map;
+}
+
+/* ── sf variants — no keyboard-killing full re-render on text input ── */
+function sfRender(key,val){   /* structural: full re-render */
+  tabs[activeTab][key]=val; renderAll();
+}
+function sfNoRender(key,val){ /* non-structural: save + update spec bar only */
+  tabs[activeTab][key]=val;
+  var t=tabs[activeTab], sp=[];
+  if(t.spec) sp.push(esc(t.spec));
+  if(t.bhaEnabled&&t.bhaLen) sp.push('BHA: '+fmt(t.bhaLen)+' '+t.unit);
+  if(t.ppf) sp.push('ppf: '+t.ppf);
+  var sb=document.getElementById('specBar');
+  if(sb){ if(sp.length){sb.style.display='block';sb.textContent=sp.join('   |   ');}else sb.style.display='none'; }
+  lsSave();
+}
+function sfPpf(val){          /* ppf: save then check if weight cols need toggling */
+  tabs[activeTab].ppf=val;
+  var ppfVal=parseFloat(val)||0, showWt=ppfVal>0;
+  var hadWt=!!document.querySelector('th.th-wt');
+  if (hadWt!==showWt){ renderAll(); return; } /* toggle column: need full re-render */
+  /* just update existing wt cells */
+  if (!showWt){ lsSave(); return; }
+  var t=tabs[activeTab], ul=t.unit, pps=Math.max(2,Math.min(3,parseInt(t.pps)||2));
+  var rows=buildRows(t.pipes,pps,t.pipeRemarks||[]);
+  var wts=document.querySelectorAll('td.wt');
+  for (var i=0; i<rows.length&&i<wts.length; i++){
+    var lf=ul==='m'?rows[i].cum*3.28084:rows[i].cum;
+    wts[i].textContent=fmt(lf*ppfVal/1000);
+  }
+  var sv=document.querySelector('.sv-blue');
+  if (sv&&rows.length){
+    var lc=rows[rows.length-1].cum, lft=ul==='m'?lc*3.28084:lc;
+    sv.textContent=fmt(lft*ppfVal/1000)+' klb';
+  }
+  sfNoRender('ppf',val);
+}
+
+function setUnit(u){
+  var f=u==='ft'?3.28084:(1/3.28084);
+  tabs.forEach(function(t){
+    if(t.unit===u) return; // already this unit, skip
+    for(var i=0;i<t.pipes.length;i++) t.pipes[i]=Math.round(t.pipes[i]*f*100)/100;
+    if(t.bhaLen) t.bhaLen=String(Math.round(parseFloat(t.bhaLen)*f*100)/100);
+    t.unit=u;
+  });
+  renderAll();
+}
+
+function beep(){
+  var ctx = new (window.AudioContext || window.webkitAudioContext)();
+  var osc = ctx.createOscillator();
+  var gain = ctx.createGain();
+
+  osc.type = "square";
+  osc.frequency.value = 800;
+  gain.gain.value = 0.1;
+
+  osc.connect(gain);
+  gain.connect(ctx.destination);
+
+  osc.start();
+  setTimeout(function(){
+    osc.stop();
+    ctx.close();
+  }, 150);
+}
+
+function setError(el, err, msg){
+  err.textContent = msg;
+  el.classList.add("input-error");
+  beep();
+  // Voice feedback
+  if(typeof _voiceEnabled !== 'undefined' && _voiceEnabled && window.speechSynthesis){
+    var u=new SpeechSynthesisUtterance('Please input the valid number');
+    u.lang='en-US'; u.rate=0.95;
+    window.speechSynthesis.speak(u);
+  }
+  setTimeout(function(){
+    el.classList.remove("input-error");
+  }, 1600);
+}
+
+function validateLen(){
+  var el=document.getElementById('singleLen'),
+      err=document.getElementById('errMsg');
+
+  if (!el || !err) return true;
+
+  var v=parseFloat(el.value);
+
+  // reset error text only
+  err.textContent='';
+
+  if (isNaN(v) || el.value===''){
+    el.classList.remove("input-error");
+    return true;
+  }
+
+  var ul=tabs[activeTab].unit;
+
+  if (ul === 'm'){
+    if (v < 9){
+      setError(el, err, 'Min length: 9 m');
+      return false;
+    }
+    if (v >= 10){
+      setError(el, err, 'Max length: 9.99 m');
+      return false;
+    }
+  } 
+  else {
+    if (v < 29.53){
+      setError(el, err, 'Min length: 29.53 ft');
+      return false;
+    }
+    if (v >= 32.81){
+      setError(el, err, 'Max length: 32.80 ft');
+      return false;
+    }
+  }
+
+  el.classList.remove("input-error");
+  return true;
+}
+
+function addPipe(){
+  var t=tabs[activeTab];
+  var inp=document.getElementById('singleLen'), err=document.getElementById('errMsg');
+  if (!inp) return;
+  var v=parseFloat(inp.value);
+  if (isNaN(v)||inp.value===''){if(err) err.textContent='Length input diin';return;}
+  if (!validateLen()) return;
+  t.pipes.push(v); inp.value='';
+  renderAll();
+  var ri=document.getElementById('singleLen'); if(ri) ri.focus();
+  var nb=document.getElementById('pipeNumBox');
+  if (nb){ nb.classList.remove('blink'); void nb.offsetWidth; nb.classList.add('blink'); setTimeout(function(){nb.classList.remove('blink');},1400); }
+}
+
+function deletePipe(idx){ tabs[activeTab].pipes.splice(idx,1); if(tabs[activeTab].pipeRemarks) tabs[activeTab].pipeRemarks.splice(idx,1); renderAll(); }
+function clearAll(){
+  var t=tabs[activeTab]; if(!t.pipes.length) return;
+  if(!confirm('Do you want to delete all pipes?')) return;
+  t.pipes=[]; t.pipeRemarks=[]; renderAll();
+}
+function dpSetRem(idx,val){
+  var t=tabs[activeTab];
+  if(!t.pipeRemarks) t.pipeRemarks=[];
+  t.pipeRemarks[idx]=val;
+  lsSave();
+}
+
+/* ── Tab ops ── */
+function switchTab(i){ activeTab=i; renderAll(); }
+function newTally(){ tabs.push(defaultTally('Tally '+(tabs.length+1))); activeTab=tabs.length-1; renderAll(); }
+function closeTab(i){
+  if(tabs.length===1){alert('Last tab cannot be delete.');return;}
+  if(!confirm('Delete "'+tabs[i].name+'"?')) return;
+  tabs.splice(i,1); if(activeTab>=tabs.length) activeTab=tabs.length-1; renderAll();
+}
+function renameTab(i){
+  var nm=prompt('Tab name:',tabs[i].name);
+  if(nm&&nm.trim()){tabs[i].name=nm.trim();renderAll();}
+}
+
+/* ── CSV Export ── */
+function downloadCSV(){
+  var t=tabs[activeTab]; if(!t.pipes.length){alert('Found No Pipe!');return;}
+  var pps=Math.max(2,Math.min(3,parseInt(t.pps)||2));
+  var useBHA=t.bhaEnabled,bha=useBHA?(parseFloat(t.bhaLen)||0):0;
+  var ppfVal=parseFloat(t.ppf)||0,showWt=ppfVal>0,ul=t.unit;
+  var csv=t.name+'\n';
+  if(t.spec) csv+='Spec:,'+t.spec+'\n';
+  if(useBHA) csv+='BHA Length ('+ul+'):,'+fmt(bha)+'\n';
+  csv+='\nSL NO,Single Length ('+ul+'),Stand No,Stand Length ('+ul+'),Cum Length ('+ul+')';
+  if(useBHA) csv+=',BHA+Cum ('+ul+')';
+  if(showWt)  csv+=',Cum Wt (klb)';
+  csv+=',Remarks';
+  csv+='\n';
+  var rows=buildRows(t.pipes,pps,t.pipeRemarks||[]);
+  for (var i=0; i<rows.length; i++){
+    var r=rows[i],wt='';
+    if(showWt){var lf=ul==='m'?r.cum*3.28084:r.cum;wt=fmt(lf*ppfVal/1000);}
+    csv+=r.sl+','+fmt(r.len)+','+(r.isFirst?r.sn:'')+','+(r.isFirst&&r.slen!=null?fmt(r.slen):'')+','+fmt(r.cum);
+    if(useBHA) csv+=','+fmt(bha+r.cum);
+    if(showWt)  csv+=','+wt;
+    csv+=','+(r.rem||'');
+    csv+='\n';
+  }
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  a.download=t.name.replace(/\s+/g,'_')+'.csv'; a.click();
+}
+
+/* ── Utils ── */
+function fmt(n){return parseFloat(n).toFixed(2);}
+function pad(n){return n<10?'0'+n:String(n);}
+function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function escA(s){return String(s||'').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+
+  // ── Data correction ─────────────────────────────────────────────
+  function dpToggleCorrection(){
+    var chk=document.getElementById('dpEnableCorrection');
+    var panel=document.getElementById('dpCorrectionPanel');
+    if(panel) panel.style.display=(chk&&chk.checked)?'block':'none';
+  }
+  function dpApplyCorrection(){
+    var t=tabs[activeTab];
+    var pipeNo=parseInt((document.getElementById('dpCorrPipe')||{}).value);
+    var newLen=parseFloat((document.getElementById('dpCorrLen')||{}).value);
+    var msgEl=document.getElementById('dpCorrMsg');
+    if(!msgEl) return;
+    msgEl.style.color='#55c255'; msgEl.textContent='';
+    if(!pipeNo||pipeNo<1||pipeNo>t.pipes.length){
+      msgEl.style.color='#c44'; msgEl.textContent='Invalid Pipe SL No (1-'+t.pipes.length+')'; return;
+    }
+    if(isNaN(newLen)||newLen<=0){
+      msgEl.style.color='#c44'; msgEl.textContent='Enter a valid length'; return;
+    }
+    var oldLen=t.pipes[pipeNo-1];
+    t.pipes[pipeNo-1]=newLen;
+    renderAll();
+    var chkEl=document.getElementById('dpEnableCorrection');
+    var panelEl=document.getElementById('dpCorrectionPanel');
+    if(chkEl) chkEl.checked=true;
+    if(panelEl) panelEl.style.display='block';
+    var msg2=document.getElementById('dpCorrMsg');
+    if(msg2){ msg2.style.color='#55c255'; msg2.textContent='Pipe #'+pipeNo+': '+parseFloat(oldLen).toFixed(3)+' -> '+newLen.toFixed(3)+' '+t.unit+' replaced.'; }
+  }
+
+  // Expose public API to window
+  window.dpStart    = dpStart;
+  window.dpNewTally = function(){ newTally(); };
+  window.dpSaveHTML = function(){
+    var payload = JSON.stringify({version:1, app:'dp', tabs:tabs, activeTab:activeTab});
+    window.injectAndSave(payload, 'TallyMaker_DrillPipe_');
+    toast('Saved! Open the .html file in any browser to continue.');
+  };
+  window.dpLoadFile = function(evt){
+    var file = evt.target.files[0]; if(!file) return;
+    var r = new FileReader();
+    r.onload = function(e){
+      try{
+        var raw=e.target.result, data;
+        if(raw.trim().charAt(0)==='<'){
+          var m=raw.match(/window\.__SAVED__=(\{[\s\S]*?\});/);
+          if(!m) throw new Error('No data found');
+          data=JSON.parse(m[1]);
+        } else { data=JSON.parse(raw); }
+        if(!data.tabs||!data.tabs.length) throw new Error('No tally data');
+        if(!confirm('Replace current data?')) return;
+        tabs=data.tabs; activeTab=data.activeTab||0;
+        if(activeTab>=tabs.length) activeTab=0;
+        lsSave(); renderAll(); toast('Restored — '+tabs.length+' tally loaded');
+      } catch(err){ alert('Invalid file: '+err.message); }
+      evt.target.value='';
+    };
+    r.readAsText(file);
+  };
+  window.dpAutoSave = function(){ try{ lsSave(); }catch(e){} };
+  // ── Expose IIFE-scoped fns to global onclick handlers ────────────
+  window.saveJSON           = saveJSON;
+  window.loadJSON           = loadJSON;
+  window.sfRender           = sfRender;
+  window.sfNoRender         = sfNoRender;
+  window.sfPpf              = sfPpf;
+  window.dpSetUnit          = setUnit;
+  window.validateLen        = validateLen;
+  window.addPipe            = addPipe;
+  window.deletePipe         = deletePipe;
+  window.clearAll           = clearAll;
+  window.downloadCSV        = downloadCSV;
+  window.dpToggleCorrection = dpToggleCorrection;
+  window.dpApplyCorrection  = dpApplyCorrection;
+  window.dpSetRem           = dpSetRem;
+  window.dpToggleReverse    = function(){ dpReverseMode = !dpReverseMode; renderAll(); };
+  // ── Backup JSON ───────────────────────────────────────────────────
+  window.dpBackupJSON = function(){
+    function p2(n){return n<10?'0'+n:String(n);}
+    var d=new Date();
+    var blob=new Blob([JSON.stringify({version:1,app:'dp',tabs:tabs,activeTab:activeTab,savedAt:d.toISOString()},null,2)],{type:'application/json'});
+    var a=document.createElement('a');
+    a.href=URL.createObjectURL(blob);
+    a.download='DrillPipe_Backup_'+d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+'_'+p2(d.getHours())+p2(d.getMinutes())+'.json';
+    a.click(); toast('Backup JSON saved!');
+  };
+})();
+
+  })();
+
+window.dpDownloadPDF = function(){
+  var pages = document.getElementById('tallyPages');
+  if(!pages){ alert('No data found!'); return; }
+
+  var css = [
+    'body{font-family:Arial,sans-serif;font-size:11px;margin:16px;background:#fff;color:#000;}',
+    'table{width:100%;border-collapse:collapse;}',
+    'th{background:#ddd;border:1px solid #999;padding:5px;text-align:center;font-size:9px;}',
+    'td{border:1px solid #bbb;padding:4px 5px;font-size:10px;text-align:center;color:#000;}',
+    '.sum-card{border:1px solid #999;padding:8px 12px;display:inline-block;min-width:90px;margin:4px;}',
+    '.sum-label{font-size:9px;color:#666;}',
+    '.sum-val{font-size:14px;font-weight:bold;color:#000;}',
+    '.summary{margin-top:10px;}',
+    '.backup-banner,.input-panel,.setup-panel,.action-row,.err-msg,.pipe-num-box,.no-print{display:none!important;}',
+    '#dpEnableCorrection,#dpCorrectionPanel{display:none!important;}',
+    '[for="dpEnableCorrection"]{display:none!important;}',
+    'div:has(>#dpEnableCorrection){display:none!important;}',
+    '.btn-del,.del-cell,.del-th{display:none!important;}',
+    '.print-header{display:block!important;text-align:center;margin-bottom:8px;}',
+    '.print-header h2{font-size:16px;font-weight:bold;}',
+    '.spec-bar{color:#000;font-size:11px;margin-bottom:8px;}',
+    '.footer{text-align:center;font-size:8px;color:#888;margin-top:16px;border-top:1px solid #ddd;padding-top:4px;}'
+  ].join('');
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<title>Drill Pipe Tally Report</title>'
+    +'<style>'+css+'</style></head><body>'
+    +pages.innerHTML
+    +'<div class="footer">Generated by Tally Maker App | © All rights reserved Abu Sayeed | sayeed1bapex@gmail.com</div>'
+    +'</body></html>';
+
+  universalDownload(html, 'DrillPipe_Tally_Report.html');
+};
+
+  try{dpStart();}catch(e){setTimeout(function(){dpStart();},50);}
+}
+
+setInterval(function(){
+  if(currentApp==="tbg"&&_tbgReady){try{saveTallyUI();}catch(e){}}
+  if(currentApp==="dp" &&_dpReady) {try{window.dpAutoSave();}catch(e){}}
+},10000);
+
+window.addEventListener("load",function(){
+  if(window.__SAVED__&&window.__SAVED__.app){
+    selOpt(window.__SAVED__.app); launchApp();
+  }
+});
+
+// ── Hamburger / Side Drawer ───────────────────────────────────────
+var _voiceEnabled = localStorage.getItem('tmVoice') === 'on'; // default OFF
+
+function openDrawer(){
+  document.getElementById('sideDrawer').classList.add('open');
+  document.getElementById('drawerOverlay').classList.add('open');
+  // Close panel when opening drawer fresh
+  document.getElementById('drawerPanel').classList.remove('open');
+}
+function closeDrawer(){
+  document.getElementById('sideDrawer').classList.remove('open');
+  document.getElementById('drawerOverlay').classList.remove('open');
+  document.getElementById('drawerPanel').classList.remove('open');
+}
+function closePanel(){
+  document.getElementById('drawerPanel').classList.remove('open');
+  // Show drawer again
+  document.getElementById('sideDrawer').classList.add('open');
+}
+function openPanel(name){
+  var panel = document.getElementById('drawerPanel');
+  document.getElementById('drawerPanelTitle').textContent =
+    name==='instructions' ? 'Instructions' : name==='settings' ? 'Settings' : 'About';
+  document.getElementById('drawerPanelBody').innerHTML = getPanelContent(name);
+  panel.classList.add('open');
+  // Sync voice toggle state after render
+  if(name==='settings'){
+    var vtoggle = document.getElementById('voiceToggleChk');
+    if(vtoggle) vtoggle.checked = _voiceEnabled;
+  }
+}
+function getPanelContent(name){
+  if(name==='instructions') return [
+    '<div class="dpanel-section">',
+    '<h4>💾 Save Format</h4>',
+    '<p>All data is stored in JSON format. Each record contains: SL (auto serial), Length, Unit (m/ft), and Date &amp; Time. Works completely <b>offline</b>.</p>',
+    '</div>',
+
+    '<div class="dpanel-section">',
+    '<h4>➕ Add New Data</h4>',
+    '<p>New data is always appended to the bottom — old records are never overwritten. Enter Length → Select Unit → Press <b>Add / Enter</b>. Data is not saved until you press Save.</p>',
+    '</div>',
+
+    '<div class="dpanel-section">',
+    '<h4>📏 Length Entry Range</h4>',
+    '<p><b>Tubing:</b> 9.00–13.99 m (29.5–45.9 ft)<br><b>Drill Pipe:</b> 9.00–9.99 m (29.53–32.80 ft)<br>Entry outside this range triggers an error shake + voice alert.</p>',
+    '</div>',
+
+    '<div class="dpanel-section">',
+    '<h4>🔧 Data Correction</h4>',
+    '<p>Enable the <b>Data Correction</b> checkbox above the table. Enter the SL No of the entry to fix and the new Length, then press <b>Apply</b>. Always take a Backup before bulk corrections.</p>',
+    '</div>',
+
+    '<div class="dpanel-section">',
+    '<h4>📊 Export / Import</h4>',
+    '<p><b>CSV Export</b> — downloads tally as a spreadsheet (Excel, Google Sheets, WPS).<br><b>Backup JSON</b> — saves all data as a .json file.<br><b>Restore</b> — imports a .json backup.<br>⚠️ Do not edit backup files manually.</p>',
+    '</div>',
+
+    '<div class="dpanel-section">',
+    '<h4>💾 Save Process</h4>',
+    '<p>Data auto-saves to browser localStorage every 10 seconds. For permanent storage press <b>Save</b> — downloads the app as an .html file with data embedded. Open that .html in any browser to continue.</p>',
+    '<p style="margin-top:6px;color:#f0a500;">Best Practice: Backup at end of each day. Keep copies in Phone Storage <b>and</b> Google Drive.</p>',
+    '</div>',
+
+    '<div class="dpanel-section">',
+    '<h4>🔢 Serial No Order</h4>',
+    '<p>Serial numbers are assigned in entry order and never change. In <b>Reverse Mode</b> (DP only) only the Length display order reverses — SL No, Stand No, and Pipe ID stay fixed.</p>',
+    '</div>',
+
+    '<div class="dpanel-section">',
+    '<h4>🔄 Normal vs Reverse Mode</h4>',
+    '<p><b>Normal:</b> SL 1 → First length entered, SL 2 → Second…<br><b>Reverse:</b> SL 1 → Last length entered, SL 2 → Second-to-last…<br>No data is deleted or overwritten. Switch freely at any time.<br>⚠️ Reverse Mode applies to <b>Drill Pipe Tally only</b>.</p>',
+    '</div>',
+
+    '<div class="dpanel-section">',
+    '<h4>📄 PDF / Print</h4>',
+    '<p>Press <b>Print / PDF</b> to open a print-ready A4 report. Page number appears top-right. Footer shows app credits. "Enable Data Correction" is hidden from print output.</p>',
+    '</div>',
+
+    '<div class="dpanel-section">',
+    '<h4>🛡️ Safety Rules</h4>',
+    '<ul>',
+    '<li>Always Backup before Restore or Delete.</li>',
+    '<li>Replace Restore permanently removes current data.</li>',
+    '<li>Deleted data cannot be recovered without a Backup.</li>',
+    '<li>Keep Backup files with clear names, e.g.:<br><span style="color:var(--accent)">backup_WellA_2026_06_10.json</span></li>',
+    '</ul>',
+    '</div>'
+  ].join('');
+
+  if(name==='settings') return [
+    '<div class="dpanel-section">',
+    '<h4>🔊 Voice Alert</h4>',
+    '<div class="voice-toggle-row">',
+    '<span class="voice-toggle-label">🔊 Voice on Invalid Input</span>',
+    '<label class="voice-toggle-switch">',
+    '<input type="checkbox" id="voiceToggleChk" onchange="setVoice(this.checked)">',
+    '<span class="vswitch-slider"></span>',
+    '</label>',
+    '</div>',
+    '<p style="font-size:10px;color:var(--muted);font-family:\'Share Tech Mono\',monospace;">When ON, entering an invalid length will speak: <i>"Please input the valid number"</i></p>',
+    '</div>',
+    '<div class="dpanel-section">',
+    '<h4>🎨 Theme</h4>',
+    '<label class="theme-option"><input type="radio" name="appTheme" value="dark" onchange="applyTheme(this.value)"><span class="theme-option-label">🌙 Dark (Default)</span></label>',
+    '<label class="theme-option"><input type="radio" name="appTheme" value="light" onchange="applyTheme(this.value)"><span class="theme-option-label">☀️ Light</span></label>',
+    '<label class="theme-option"><input type="radio" name="appTheme" value="oilfield" onchange="applyTheme(this.value)"><span class="theme-option-label">🛢️ Oilfield Black &amp; Gold</span></label>',
+    '</div>'
+  ].join('');
+
+  if(name==='about') return [
+    '<div class="about-row"><div class="about-lbl">App Name</div><div class="about-val">Tally Maker</div></div>',
+    '<div class="about-row"><div class="about-lbl">Version</div><div class="about-val">v1</div></div>',
+    '<div class="about-row"><div class="about-lbl">Developer</div><div class="about-val">Abu Sayeed</div></div>',
+    '<div class="about-row"><div class="about-lbl">Education</div><div class="about-val">BSc in Mechanical Engineering</div></div>',
+    '<div class="about-row"><div class="about-lbl">Designation</div><div class="about-val">Driller, Drilling Division, BAPEX</div></div>',
+    '<div class="about-row"><div class="about-lbl">E-mail</div><div class="about-val">sayeed1bapex@gmail.com</div></div>',
+    '<div class="about-row"><div class="about-lbl">Last Updated</div><div class="about-val">June 2026</div></div>',
+    '<div class="about-row"><div class="about-lbl">Copyright</div><div class="about-val">&copy; All rights reserved : Abu Sayeed<br>BSc in Mechanical Engineering</div></div>'
+  ].join('');
+  return '';
+}
+
+function setVoice(on){
+  _voiceEnabled = on;
+  localStorage.setItem('tmVoice', on ? 'on' : 'off');
+}
+
+// Theme switcher
+var _savedTheme = localStorage.getItem('tmTheme')||'dark';
+function applyTheme(theme){
+  localStorage.setItem('tmTheme', theme);
+  var r=document.documentElement.style;
+  if(theme==='light'){
+    r.setProperty('--bg','#f4f6f8'); r.setProperty('--panel','#ffffff');
+    r.setProperty('--border','#d1d9e0'); r.setProperty('--accent','#e07b00');
+    r.setProperty('--accent2','#007ab8'); r.setProperty('--green','#1a9e8e');
+    r.setProperty('--text','#1a2233'); r.setProperty('--muted','#6b7a8d');
+    r.setProperty('--input-bg','#eef1f5'); r.setProperty('--danger','#d32f2f');
+    document.body.style.background='#f4f6f8';
+  } else if(theme==='oilfield'){
+    r.setProperty('--bg','#0a0800'); r.setProperty('--panel','#120f00');
+    r.setProperty('--border','#2e2200'); r.setProperty('--accent','#f0a500');
+    r.setProperty('--accent2','#c87800'); r.setProperty('--green','#c8a000');
+    r.setProperty('--text','#e8d8a0'); r.setProperty('--muted','#7a6430');
+    r.setProperty('--input-bg','#0e0a00'); r.setProperty('--danger','#cc3300');
+    document.body.style.background='#0a0800';
+  } else {
+    r.setProperty('--bg','#0a0e14'); r.setProperty('--panel','#111825');
+    r.setProperty('--border','#1e2d42'); r.setProperty('--accent','#f0a500');
+    r.setProperty('--accent2','#00b4d8'); r.setProperty('--green','#2ec4b6');
+    r.setProperty('--text','#c9d6e3'); r.setProperty('--muted','#5a6a7e');
+    r.setProperty('--input-bg','#0d1520'); r.setProperty('--danger','#e63946');
+    document.body.style.background='#0a0e14';
+  }
+  var radios=document.querySelectorAll('input[name="appTheme"]');
+  radios.forEach(function(rb){ rb.checked=(rb.value===theme); });
+}
+window.addEventListener('DOMContentLoaded',function(){ applyTheme(_savedTheme); });
+</script>
+
+<!-- TBG JS -->
+<script>
+// ============================================================
+// STATE
+// ============================================================
+let unit = 'm'; // 'm' or 'ft'
+let tallies = [];       // [{id, name, rows, tubingJointCount, wellInfo, specs, remarks}]
+let activeTallyIdx = 0;
+
+function currentTally(){ return tallies[activeTallyIdx]; }
+
+// ============================================================
+// INIT
+// ============================================================
+function tbgStart(){
+  const now = new Date();
+  document.getElementById('opDate').value = now.toISOString().split('T')[0];
+  buildSpecBlocks();
+  newTally(true);
+  renderTallyTabs();
+  loadTallyUI();
+}
+
+// ============================================================
+// SPEC BLOCKS
+// ============================================================
+const SPEC_NAMES = ['Tubing Type 1','Tubing Type 2','Tubing Type 3'];
+let activeSpecIndex = 0; // which spec is currently selected for adding joints
+
+function buildSpecBlocks(){
+  const container = document.getElementById('specBlocks');
+  container.innerHTML = '';
+  for(let i=0;i<3;i++){
+    const div = document.createElement('div');
+    div.className = 'spec-block' + (i===0?' selected':'');
+    div.id = 'specBlock'+i;
+    div.innerHTML = `
+      <div class="spec-block-header">
+        <input type="checkbox" id="specChk${i}" ${i===0?'checked':''} onchange="onSpecCheck(${i})">
+        <input type="radio" name="activeSpec" id="specRadio${i}" ${i===0?'checked':''} onchange="onSpecRadio(${i})" style="width:16px;height:16px;cursor:pointer;accent-color:var(--accent);">
+        <span class="spec-block-label">Spec ${i+1} &mdash; <input type="text" id="specTypeName${i}" value="${SPEC_NAMES[i]}" style="display:inline;width:120px;padding:2px 6px;font-size:12px;" placeholder="Type name"></span>
+      </div>
+      <div style="font-size:9px;color:var(--accent);letter-spacing:1px;margin-bottom:6px;font-family:'Exo 2',sans-serif;" id="specActiveLabel${i}">${i===0?'▶ ACTIVE FOR JOINT ENTRY':''}</div>
+      <div class="spec-inner">
+        <div class="field-group"><label>Nominal Size</label>
+          <select id="specSize${i}">
+            <option value="">--</option>
+            <option>1.900"</option><option>2-3/8"</option><option>2-7/8"</option>
+            <option>3-1/2"</option><option>4"</option><option>4-1/2"</option>
+          </select>
+        </div>
+        <div class="field-group"><label>OD (in)</label><input type="text" id="specOD${i}" placeholder="e.g. 2.875"></div>
+        <div class="field-group"><label>ID (in)</label><input type="text" id="specID${i}" placeholder="e.g. 2.441"></div>
+        <div class="field-group"><label>Grade</label><input type="text" id="specGrade${i}" placeholder="J-55"></div>
+        <div class="field-group"><label>Weight (lb/ft)</label><input type="text" id="specWeight${i}" placeholder="6.50"></div>
+        <div class="field-group"><label>Connection</label><input type="text" id="specConn${i}" placeholder="EUE 8rd"></div>
+        <div class="field-group"><label>Make Up Torque (ft-lb)</label><input type="text" id="specTorque${i}" placeholder="e.g. 2800"></div>
+        <div class="field-group"><label>Capacity (lit/m)</label><input type="text" id="specCapacity${i}" placeholder="e.g. 2.345"></div>
+        <div class="field-group"><label>Collapse Pressure (psi)</label><input type="text" id="specCollapse${i}" placeholder="e.g. 7260"></div>
+        <div class="field-group"><label>Burst Pressure (psi)</label><input type="text" id="specBurst${i}" placeholder="e.g. 8530"></div>
+        <div class="field-group"><label>Others</label><textarea id="specOthers${i}" rows="2" placeholder="Any additional info..." style="width:100%;resize:vertical;font-size:12px;padding:4px 6px;background:var(--input-bg);color:var(--text);border:1px solid var(--border);border-radius:4px;font-family:'Share Tech Mono',monospace;"></textarea></div>
+      </div>
+    `;
+    container.appendChild(div);
+  }
+}
+
+function onSpecRadio(i){
+  activeSpecIndex = i;
+  for(let j=0;j<3;j++){
+    document.getElementById('specActiveLabel'+j).textContent = j===i ? '▶ ACTIVE FOR JOINT ENTRY' : '';
+  }
+}
+
+function onSpecCheck(i){
+  const chk = document.getElementById('specChk'+i);
+  const blk = document.getElementById('specBlock'+i);
+  if(chk.checked) blk.classList.add('selected');
+  else blk.classList.remove('selected');
+}
+
+function getSelectedSpecs(){
+  const result=[];
+  for(let i=0;i<3;i++){
+    if(document.getElementById('specChk'+i).checked){
+      result.push({
+        name: document.getElementById('specTypeName'+i).value||SPEC_NAMES[i],
+        size: document.getElementById('specSize'+i).value,
+        od:   document.getElementById('specOD'+i).value,
+        id:   document.getElementById('specID'+i).value,
+        grade:document.getElementById('specGrade'+i).value,
+        weight:document.getElementById('specWeight'+i).value,
+        conn: document.getElementById('specConn'+i).value,
+        torque: document.getElementById('specTorque'+i).value,
+        capacity: document.getElementById('specCapacity'+i).value,
+        collapse: document.getElementById('specCollapse'+i).value,
+        burst: document.getElementById('specBurst'+i).value,
+      others: document.getElementById('specOthers'+i).value,
+        
+      });
+    }
+  }
+  return result;
+}
+
+function getActiveSpecOD(){
+  return document.getElementById('specOD'+activeSpecIndex).value||'—';
+}
+function getActiveSpecID(){
+  return document.getElementById('specID'+activeSpecIndex).value||'—';
+}
+function getActiveSpecName(){
+  return document.getElementById('specTypeName'+activeSpecIndex).value||SPEC_NAMES[activeSpecIndex];
+}
+
+// ============================================================
+// UNIT
+// ============================================================
+function setUnit(u){
+  // NEVER convert r.len — it is always stored in meters
+  // Just update the unit flag and re-render
+  unit = u;
+  var bM=document.getElementById('btnM'), bF=document.getElementById('btnFt');
+  if(bM) bM.classList.toggle('active', u==='m');
+  if(bF) bF.classList.toggle('active', u==='ft');
+  var lbl = u==='m'?'Tubing Length (m)':'Tubing Length (ft)';
+  var lE = document.getElementById('lenLabel');
+  if(lE) lE.textContent = lbl;
+  var siL=document.getElementById('siLenLabel');
+  if(siL) siL.textContent = u==='m'?'Length (m)':'Length (ft)';
+  var thL=document.getElementById('thLen');
+  if(thL) thL.textContent = u==='m'?'Length (m)':'Length (ft)';
+  var thC=document.getElementById('thCum');
+  if(thC) thC.textContent = u==='m'?'Cum. Length (m)':'Cum. Length (ft)';
+  const qi = document.getElementById('qi_len');
+  if(qi){
+    if(u==='m'){qi.min=9;qi.max=13.999;qi.placeholder='9.00 – 13.99';}
+    else{qi.min=29.5;qi.max=45.9;qi.placeholder='29.5 – 45.9';}
+  }
+  var cu = document.getElementById('corrUnitLabel');
+  if(cu) cu.textContent = u;
+  if(typeof renderTable==='function') renderTable();
+}
+
+// ============================================================
+// TALLY TABS
+// ============================================================
+function newTally(silent){
+  const idx = tallies.length;
+  tallies.push({
+    id: Date.now(),
+    name: 'Tally '+(idx+1),
+    rows: [],
+    tubingJointCount: 0,
+    wellInfo:{},
+    remarks:''
+  });
+  activeTallyIdx = idx;
+  renderTallyTabs();
+  if(!silent) loadTallyUI();
+}
+
+function switchTally(idx){
+  saveTallyUI();
+  activeTallyIdx = idx;
+  loadTallyUI();
+  renderTallyTabs();
+}
+
+function renderTallyTabs(){
+  const bar = document.getElementById('tallyTabsBar');
+  bar.innerHTML = '';
+  tallies.forEach((t,i)=>{
+    const tab = document.createElement('div');
+    tab.className = 'tally-tab'+(i===activeTallyIdx?' active':'');
+    tab.title = 'Double-click to rename';
+    tab.innerHTML = `<span class="tally-tab-name" id="tabName${i}" ondblclick="renameTab(${i})">${escH(t.name)}</span>
+      ${tallies.length>1?`<span class="tally-tab-close" onclick="closeTab(${i},event)">✕</span>`:''}`;
+    tab.addEventListener('click', function(e){
+      if(!e.target.classList.contains('tally-tab-close')) switchTally(i);
+    });
+    bar.appendChild(tab);
+  });
+}
+
+function renameTab(i){
+  const span = document.getElementById('tabName'+i);
+  const oldName = tallies[i].name;
+  span.contentEditable = 'true';
+  span.focus();
+  document.execCommand('selectAll',false,null);
+  span.onblur = function(){
+    span.contentEditable='false';
+    const newName = span.textContent.trim()||oldName;
+    tallies[i].name = newName;
+    span.textContent = newName;
+  };
+  span.onkeydown = function(e){if(e.key==='Enter'){e.preventDefault();span.blur();}};
+}
+
+function closeTab(i,e){
+  e.stopPropagation();
+  if(!confirm('Do you close this Tally ?')) return;
+  tallies.splice(i,1);
+  if(tallies.length===0) newTally(true);
+  else if(activeTallyIdx>=tallies.length) activeTallyIdx=tallies.length-1;
+  renderTallyTabs();
+  loadTallyUI();
+}
+
+// ============================================================
+// SAVE / LOAD TALLY UI
+// ============================================================
+function saveTallyUI(){
+  const t = currentTally();
+  t.wellInfo = {
+    wellName: document.getElementById('wellName').value,
+    fieldName: document.getElementById('fieldName').value,
+    rig: document.getElementById('rig').value,
+    opDate: document.getElementById('opDate').value,
+    opType: document.getElementById('opType').value,
+    driller: document.getElementById('driller').value,
+    tallyMan: document.getElementById('tallyMan').value,
+  };
+  t.remarks = document.getElementById('remarks').value;
+  t.activeSpecIndex = activeSpecIndex;
+  // save specs
+  t.specs = [];
+  for(let i=0;i<3;i++){
+    t.specs.push({
+      checked: document.getElementById('specChk'+i).checked,
+      typeName: document.getElementById('specTypeName'+i).value,
+      size: document.getElementById('specSize'+i).value,
+      od: document.getElementById('specOD'+i).value,
+      id: document.getElementById('specID'+i).value,
+      grade: document.getElementById('specGrade'+i).value,
+      weight: document.getElementById('specWeight'+i).value,
+      conn: document.getElementById('specConn'+i).value,
+      torque: document.getElementById('specTorque'+i).value,
+      capacity: document.getElementById('specCapacity'+i).value,
+      collapse: document.getElementById('specCollapse'+i).value,
+      burst: document.getElementById('specBurst'+i).value,
+      others: document.getElementById('specOthers'+i).value,
+    });
+  }
+}
+
+function loadTallyUI(){
+  const t = currentTally();
+  const wi = t.wellInfo||{};
+  document.getElementById('wellName').value = wi.wellName||'';
+  document.getElementById('fieldName').value = wi.fieldName||'';
+  document.getElementById('rig').value = wi.rig||'';
+  document.getElementById('opDate').value = wi.opDate||new Date().toISOString().split('T')[0];
+  document.getElementById('opType').value = wi.opType||'';
+  document.getElementById('driller').value = wi.driller||'';
+  document.getElementById('tallyMan').value = wi.tallyMan||'';
+  document.getElementById('remarks').value = t.remarks||'';
+  // specs
+  if(t.specs){
+    t.specs.forEach((s,i)=>{
+      document.getElementById('specChk'+i).checked = s.checked;
+      document.getElementById('specTypeName'+i).value = s.typeName||SPEC_NAMES[i];
+      document.getElementById('specSize'+i).value = s.size||'';
+      document.getElementById('specOD'+i).value = s.od||'';
+      document.getElementById('specID'+i).value = s.id||'';
+      document.getElementById('specGrade'+i).value = s.grade||'';
+      document.getElementById('specWeight'+i).value = s.weight||'';
+      document.getElementById('specConn'+i).value = s.conn||'';
+      document.getElementById('specTorque'+i).value = s.torque||'';
+      document.getElementById('specCapacity'+i).value = s.capacity||'';
+      document.getElementById('specCollapse'+i).value = s.collapse||'';
+      document.getElementById('specBurst'+i).value = s.burst||'';
+      document.getElementById('specOthers'+i).value = s.others||'';
+      const blk = document.getElementById('specBlock'+i);
+      if(s.checked) blk.classList.add('selected'); else blk.classList.remove('selected');
+    });
+  }
+  // restore active spec radio
+  if(t.activeSpecIndex !== undefined) activeSpecIndex = t.activeSpecIndex;
+  for(let i=0;i<3;i++){
+    const radio = document.getElementById('specRadio'+i);
+    if(radio) radio.checked = (i===activeSpecIndex);
+    const lbl = document.getElementById('specActiveLabel'+i);
+    if(lbl) lbl.textContent = i===activeSpecIndex ? '▶ ACTIVE FOR JOINT ENTRY' : '';
+  }
+  document.getElementById('nextJointNum').textContent = t.tubingJointCount+1;
+  renderTable();
+}
+
+// ============================================================
+// ADD ROWS
+// ============================================================
+function addTubingRow(){
+  const t = currentTally();
+  const lenVal = parseFloat(document.getElementById('qi_len').value);
+  const minV = unit==='m'?9:29.5;
+  const maxV = unit==='m'?13.999:45.9;
+  if(!lenVal||lenVal<minV||lenVal>maxV){
+    const inp = document.getElementById('qi_len');
+    inp.classList.add('input-error');
+    setTimeout(()=>inp.classList.remove('input-error'), 1600);
+    // Voice feedback
+    if(_voiceEnabled && window.speechSynthesis){
+      var u=new SpeechSynthesisUtterance('Please input the valid number');
+      u.lang='en-US'; u.rate=0.95;
+      window.speechSynthesis.speak(u);
+    }
+    return;
+  }
+  // Always store in meters
+  const lenM = unit==='ft' ? lenVal/3.28084 : lenVal;
+  t.tubingJointCount++;
+  const od = getActiveSpecOD();
+  const id = getActiveSpecID();
+  const specName = getActiveSpecName();
+  t.rows.push({type:'tubing',serial:specName,len:lenM,od,id,remarks:'',jointNum:t.tubingJointCount,specIdx:activeSpecIndex});
+  // Blink
+  const numEl = document.getElementById('nextJointNum');
+  numEl.textContent = t.tubingJointCount;
+  numEl.classList.remove('blink');
+  void numEl.offsetWidth;
+  numEl.classList.add('blink');
+  setTimeout(()=>{numEl.classList.remove('blink');numEl.textContent=t.tubingJointCount+1;},620);
+  document.getElementById('qi_len').value='';
+  document.getElementById('qi_len').focus();
+  renderTable();
+}
+
+function addSpecialRow(){
+  const t = currentTally();
+  const name = document.getElementById('si_name').value.trim();
+  const lenVal = parseFloat(document.getElementById('si_len').value);
+  if(!name||!lenVal||lenVal<=0){
+    if(!name){ document.getElementById('si_name').classList.add('input-error'); setTimeout(()=>document.getElementById('si_name').classList.remove('input-error'),1600); }
+    if(!lenVal||lenVal<=0){ document.getElementById('si_len').classList.add('input-error'); setTimeout(()=>document.getElementById('si_len').classList.remove('input-error'),1600); }
+    return;
+  }
+  const lenM = unit==='ft' ? lenVal/3.28084 : lenVal;
+  t.rows.push({
+    type:'special', serial:name, len:lenM,
+    od: document.getElementById('si_od').value||'—',
+    id: document.getElementById('si_id').value||'—',
+    remarks: document.getElementById('si_remarks').value||'',
+    jointNum: null
+  });
+  document.getElementById('si_name').value='';
+  document.getElementById('si_len').value='';
+  document.getElementById('si_od').value='';
+  document.getElementById('si_id').value='';
+  document.getElementById('si_remarks').value='';
+  renderTable();
+  setTimeout(() => {
+  document.getElementById('si_name').focus();
+}, 50);
+}
+
+function deleteRow(idx){
+  const t = currentTally();
+  const row = t.rows[idx];
+  t.rows.splice(idx,1);
+  if(row.type==='tubing'){
+    let tc=0;
+    t.rows.forEach(r=>{if(r.type==='tubing'){tc++;r.jointNum=tc;}});
+    t.tubingJointCount=tc;
+    document.getElementById('nextJointNum').textContent=tc+1;
+  }
+  renderTable();
+}
+
+function clearAllRows(){
+  if(!confirm('Do you want to delete all data?')) return;
+  const t = currentTally();
+  t.rows=[];
+  t.tubingJointCount=0;
+  document.getElementById('nextJointNum').textContent='1';
+  renderTable();
+}
+
+// ============================================================
+// DATA CORRECTION
+// ============================================================
+function toggleCorrectionPanel(){
+  const chk = document.getElementById('enableCorrection');
+  document.getElementById('correctionPanel').style.display = chk.checked ? 'block' : 'none';
+  if(!chk.checked) document.getElementById('corrMsg').textContent='';
+}
+
+function applyCorrection(){
+  const jointNo = parseInt(document.getElementById('corr_jointNo').value);
+  const newLen = parseFloat(document.getElementById('corr_newLen').value);
+  const msgEl = document.getElementById('corrMsg');
+
+  const minV = unit === 'm' ? 9 : 29.5;
+  const maxV = unit === 'm' ? 13.999 : 45.9;
+
+  // reset message color
+  msgEl.style.color = 'var(--muted)';
+  msgEl.textContent = '';
+
+  // validate joint number
+  if(!jointNo || jointNo < 1){
+    msgEl.style.color = 'var(--danger)';
+    msgEl.textContent = '✘ Put Valid Joint No';
+    return;
+  }
+
+  // validate length input
+  if(!newLen || newLen <= 0){
+    msgEl.style.color = 'var(--danger)';
+    msgEl.textContent = '✘ Put Valid New Length';
+    return;
+  }
+
+  // range validation
+  if(newLen < minV || newLen > maxV){
+    msgEl.style.color = 'var(--danger)';
+    msgEl.textContent = `✘ Length must be between ${minV} and ${maxV} ${unit}`;
+    return;
+  }
+
+  const t = currentTally();
+  const row = t.rows.find(r => r.type === 'tubing' && r.jointNum === jointNo);
+
+  if(!row){
+    msgEl.style.color = 'var(--danger)';
+    msgEl.textContent = `✘ Joint #${jointNo} পাওয়া যায়নি।`;
+    return;
+  }
+
+  const oldLenM = row.len; // always meters
+  const newLenM = unit==='ft' ? newLen/3.28084 : newLen;
+  row.len = newLenM;
+
+  renderTable();
+
+  const cf = unit==='ft' ? 3.28084 : 1;
+  msgEl.style.color = 'var(--green)';
+  msgEl.textContent = `✔ Joint #${jointNo}: ${(oldLenM*cf).toFixed(2)} → ${newLen.toFixed(2)} ${unit} — Replaced successfully.`;
+
+  document.getElementById('corr_jointNo').value = '';
+  document.getElementById('corr_newLen').value = '';
+
+  setTimeout(() => {
+    document.getElementById('corr_jointNo').focus();
+  }, 50);
+}
+// ============================================================
+// RENDER TABLE
+// ============================================================
+function renderTable(){
+  const t = currentTally();
+  const tbody = document.getElementById('tallyBody');
+  tbody.innerHTML='';
+  let cum=0;
+  const cf = unit==='ft' ? 3.28084 : 1; // display conversion factor
+  t.rows.forEach((r,i)=>{
+    cum+=r.len;
+    const dispLen = (r.len * cf).toFixed(2);
+    const dispCum = (cum * cf).toFixed(2);
+    const tr=document.createElement('tr');
+    if(r.type==='special') tr.classList.add('special-row');
+    const slCell = r.type==='tubing'
+      ? `<span style="color:var(--muted)">${r.jointNum}</span>`
+      : `<span style="color:var(--special)">—</span>`;
+    const serialCell = r.type==='special'
+      ? `<span class="serial-col sp">${escH(r.serial)}</span>`
+      : `<span class="serial-col">${escH(r.serial)||'—'}</span>`;
+    tr.innerHTML=`
+      <td class="sl-col">${slCell}</td>
+      <td>${serialCell}</td>
+      <td class="len-col">${dispLen}</td>
+      <td class="od-col">${escH(r.od)}</td>
+      <td class="id-col">${escH(r.id)}</td>
+      <td class="cum-col">${dispCum}</td>
+      <td class="rem-col">${escH(r.remarks)}</td>
+      <td><button class="del-btn" onclick="deleteRow(${i})">✕</button></td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+// ============================================================
+// PAGE SWITCHING
+// ============================================================
+function showPage(pg){
+  if(pg==='tally') saveTallyUI();
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.getElementById('pageTally').style.display = pg==='tally'?'':'none';
+  document.getElementById('pageBackup').style.display = pg==='backup'?'':'none';
+  document.getElementById('pageTally').classList.toggle('active', pg==='tally');
+  document.getElementById('pageBackup').classList.toggle('active', pg==='backup');
+  document.getElementById('tallyTabsBar').style.display = pg==='tally'?'':'none';
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  if(pg==='tally') document.getElementById('navTally').classList.add('active');
+  if(pg==='backup') document.getElementById('navBackup').classList.add('active');
+}
+
+// ============================================================
+// EXPORT CSV
+// ============================================================
+function exportCSV(){
+  saveTallyUI();
+  const t = currentTally();
+  const wi = t.wellInfo||{};
+  const unitLabel = unit;
+  let csv = `Well,${wi.wellName||''},Field,${wi.fieldName||''},Rig,${wi.rig||''},Date,${wi.opDate||''},Operation,${wi.opType||''}\n`;
+  csv += `Driller,${wi.driller||''},Tally Man,${wi.tallyMan||''}\n\n`;
+  csv += `Tubing SL No,Item / Description,Length (${unitLabel}),OD (in),ID (in),Cum. Length (${unitLabel}),Remarks\n`;
+  let cum=0;
+  const cf = unit==='ft' ? 3.28084 : 1;
+  t.rows.forEach(r=>{
+    cum+=r.len;
+    csv+=`${r.type==='tubing'?r.jointNum:'—'},${csvQ(r.serial)},${(r.len*cf).toFixed(2)},${r.od},${r.id},${(cum*cf).toFixed(2)},${csvQ(r.remarks)}\n`;
+  });
+  const blob=new Blob([csv],{type:'text/csv'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=(wi.wellName||'tally')+'_'+t.name.replace(/\s+/g,'_')+'.csv';
+  a.click();
+}
+function csvQ(v){ return '"'+(v||'').replace(/"/g,'""')+'"'; }
+
+// ============================================================
+// PRINT / PDF
+// ============================================================
+function printA4(){
+  saveTallyUI();
+  const t = currentTally();
+  const wi = t.wellInfo||{};
+  const specs = getSelectedSpecs();
+  const unitLabel = unit;
+
+  // Build rows HTML
+  let cum=0;
+  const cf = unit==='ft' ? 3.28084 : 1;
+  let rowsHTML='';
+  t.rows.forEach(r=>{
+    cum+=r.len;
+    const sl = r.type==='tubing'?r.jointNum:'—';
+    const rowStyle = r.type==='special'?'background:#f5f0ff;font-style:italic;':'';
+    rowsHTML+='<tr style="'+rowStyle+'">'
+      +'<td style="text-align:center;border:1px solid #bbb;padding:4px 3px;">'+sl+'</td>'
+      +'<td style="text-align:left;border:1px solid #bbb;padding:4px 3px;">'+escH(r.serial)+'</td>'
+      +'<td style="text-align:center;border:1px solid #bbb;padding:4px 3px;">'+(r.len*cf).toFixed(2)+'</td>'
+      +'<td style="text-align:center;border:1px solid #bbb;padding:4px 3px;">'+escH(r.od)+'</td>'
+      +'<td style="text-align:center;border:1px solid #bbb;padding:4px 3px;">'+escH(r.id)+'</td>'
+      +'<td style="text-align:center;border:1px solid #bbb;padding:4px 3px;font-weight:bold;">'+(cum*cf).toFixed(2)+'</td>'
+      +'<td style="text-align:left;border:1px solid #bbb;padding:4px 3px;">'+escH(r.remarks)+'</td>'
+      +'</tr>';
+  });
+
+  // Spec table with all fields
+  let specsHTML='';
+  if(specs.length>0){
+    specsHTML='<table style="width:100%;border-collapse:collapse;margin-bottom:8px;font-size:8px;">'
+      +'<tr style="background:#ddd;">'
+      +'<th style="border:1px solid #aaa;padding:3px;">Spec</th>'
+      +'<th style="border:1px solid #aaa;padding:3px;">Nom.Size</th>'
+      +'<th style="border:1px solid #aaa;padding:3px;">OD(in)</th>'
+      +'<th style="border:1px solid #aaa;padding:3px;">ID(in)</th>'
+      +'<th style="border:1px solid #aaa;padding:3px;">Grade</th>'
+      +'<th style="border:1px solid #aaa;padding:3px;">Wt(lb/ft)</th>'
+      +'<th style="border:1px solid #aaa;padding:3px;">Connection</th>'
+      +'<th style="border:1px solid #aaa;padding:3px;">M/U Torque(ft-lb)</th>'
+      +'<th style="border:1px solid #aaa;padding:3px;">Capacity(lit/m)</th>'
+      +'<th style="border:1px solid #aaa;padding:3px;">Collapse(psi)</th>'
+      +'<th style="border:1px solid #aaa;padding:3px;">Burst(psi)</th>'
+      +'<th style="border:1px solid #aaa;padding:3px;">Others</th>'
+      +'</tr>';
+    specs.forEach(function(s){
+      specsHTML+='<tr>'
+        +'<td style="border:1px solid #aaa;padding:3px;font-weight:bold;">'+escH(s.name)+'</td>'
+        +'<td style="border:1px solid #aaa;padding:3px;text-align:center;">'+escH(s.size)+'</td>'
+        +'<td style="border:1px solid #aaa;padding:3px;text-align:center;">'+escH(s.od)+'</td>'
+        +'<td style="border:1px solid #aaa;padding:3px;text-align:center;">'+escH(s.id)+'</td>'
+        +'<td style="border:1px solid #aaa;padding:3px;text-align:center;">'+escH(s.grade)+'</td>'
+        +'<td style="border:1px solid #aaa;padding:3px;text-align:center;">'+escH(s.weight)+'</td>'
+        +'<td style="border:1px solid #aaa;padding:3px;text-align:center;">'+escH(s.conn)+'</td>'
+        +'<td style="border:1px solid #aaa;padding:3px;text-align:center;">'+escH(s.torque)+'</td>'
+        +'<td style="border:1px solid #aaa;padding:3px;text-align:center;">'+escH(s.capacity)+'</td>'
+        +'<td style="border:1px solid #aaa;padding:3px;text-align:center;">'+escH(s.collapse)+'</td>'
+        +'<td style="border:1px solid #aaa;padding:3px;text-align:center;">'+escH(s.burst)+'</td>'
+        +'<td style="border:1px solid #aaa;padding:3px;white-space:normal;word-break:break-word;max-width:80px;">'+escH(s.others)+'</td>'
+        +'</tr>';
+    });
+    specsHTML+='</table>';
+  }
+
+  const remarksHTML = t.remarks
+    ? '<p style="margin-top:8px;font-size:10px;"><b>Remarks:</b> '+escH(t.remarks)+'</p>'
+    : '';
+
+  // Build CSS as a separate string (avoids style/script closing tags in template literals)
+  const printCSS = [
+    '@page{size:A4;margin:18mm 12mm 25mm 12mm;}',
+    'html,body{margin:0;padding:0;}',
+    'body{font-family:Arial,sans-serif;font-size:11px;color:#000;}',
+    '#pgNum{position:fixed;top:4mm;right:6mm;font-size:9px;color:#333;font-family:Arial,sans-serif;}',
+    '.pfoot{position:running(footer);text-align:center;font-size:7.5px;color:#666;font-family:Arial,sans-serif;border-top:1px solid #ccc;padding-top:2px;}',
+    '@page{@bottom-center{content:element(footer)}}',
+    '.pfoot-wrap{position:fixed;bottom:0;left:0;right:0;text-align:center;font-size:7.5px;color:#666;font-family:Arial,sans-serif;border-top:1px solid #ccc;padding:2px 4px;background:white;}',
+    '.rpt-hdr{text-align:center;margin-bottom:8px;}',
+    '.rpt-hdr h2{font-size:16px;font-weight:bold;margin:0 0 2px 0;letter-spacing:1px;text-transform:uppercase;}',
+    '.rpt-hdr .tname{font-size:13px;font-weight:600;color:#222;margin-bottom:3px;}',
+    '.rpt-hdr hr{border:none;border-top:2px solid #000;margin:5px 0 8px 0;}',
+    '.igrid{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:8px;}',
+    '.icell{font-size:10px;} .icell span{font-weight:bold;}',
+    'table{width:100%;border-collapse:collapse;font-size:7.5px;}',
+    'thead th{background:#ddd;border:1px solid #aaa;padding:2px 2px;text-align:center;font-size:7px;white-space:nowrap;}',
+    'thead{display:table-header-group;}',
+    '.thsl{width:36px;}',
+    'tfoot{display:table-footer-group;}',
+    'tfoot td{background:#eee;border:1px solid #aaa;padding:3px;font-weight:bold;font-size:8.5px;}',
+    '.sec-lbl{font-size:10px;font-weight:bold;margin-bottom:3px;margin-top:5px;border-bottom:1px solid #bbb;padding-bottom:2px;}',
+    '.col-others{white-space:normal;word-break:break-word;min-width:60px;max-width:90px;}',
+    'td,th{word-break:normal;}'
+  ].join('\n');
+
+  // Build JS for print window as array joined (avoids script closing tag literal)
+  const printJS = [
+    'window.onload=function(){',
+    '  var total=Math.max(1,Math.ceil(document.body.scrollHeight/1050));',
+    '  document.getElementById("pgNum").textContent="Page 1 of "+total;',
+    '  window.print();',
+    '};'
+  ].join('\n');
+
+  const infoGrid = '<div class="igrid">'
+    +'<div class="icell">Well: <span>'+escH(wi.wellName)+'</span></div>'
+    +'<div class="icell">Field: <span>'+escH(wi.fieldName)+'</span></div>'
+    +'<div class="icell">Rig: <span>'+escH(wi.rig)+'</span></div>'
+    +'<div class="icell">Date: <span>'+escH(wi.opDate)+'</span></div>'
+    +'<div class="icell">Operation: <span>'+escH(wi.opType)+'</span></div>'
+    +'<div class="icell">Driller: <span>'+escH(wi.driller)+'</span></div>'
+    +'<div class="icell">Prepared by: <span>'+escH(wi.tallyMan)+'</span></div>'
+    +'</div>';
+
+  const tallyTable = '<table>'
+    +'<thead><tr>'
+    +'<th class="thsl">Tubing<br>SL No</th>'
+    +'<th>Item / Description</th>'
+    +'<th>Length ('+unitLabel+')</th>'
+    +'<th>OD (in)</th>'
+    +'<th>ID (in)</th>'
+    +'<th>Cum. Length ('+unitLabel+')</th>'
+    +'<th>Remarks</th>'
+    +'</tr></thead>'
+    +'<tbody>'+rowsHTML+'</tbody>'
+    +'<tfoot><tr>'
+    +'<td colspan="2" style="text-align:right;">Total Tubing Joints: '+t.tubingJointCount+'</td>'
+    +'<td colspan="5">Total Length: '+cum.toFixed(2)+' '+unitLabel+'</td>'
+    +'</tr></tfoot>'
+    +'</table>';
+
+  const footerTxt = 'Generated by Tally Maker App &nbsp;&#124;&nbsp; &copy; All rights reserved Abu Sayeed &nbsp;&#124;&nbsp; E-mail: sayeed1bapex@gmail.com';
+
+  // Assemble final HTML using array join — no problematic tags inside template literals
+  const parts = [
+    '<!DOCTYPE html><html><head><meta charset="UTF-8">',
+    '<title>Tubing Tally Report - '+escH(t.name)+'</title>',
+    '<style>', printCSS, '<' + '/style>',
+    '<script>', printJS, '<' + '/script>',
+    '</head><body>',
+    '<div id="pgNum"></div>',
+    '<div class="pfoot-wrap">'+footerTxt+'</div>',
+    '<div class="rpt-hdr"><h2>Tubing Tally Report</h2><div class="tname">'+escH(t.name)+'</div><hr></div>',
+    infoGrid,
+    '<div class="sec-lbl">Tubing Specifications</div>',
+    specsHTML,
+    '<div class="sec-lbl">Tally Log</div>',
+    tallyTable,
+    remarksHTML,
+    '</body></html>'
+  ];
+
+  const html = parts.join('\n');
+  const w = window.open('','_blank','width=900,height=700');
+  w.document.write(html);
+  w.document.close();
+}
+
+// ============================================================
+// BACKUP / RESTORE
+// ============================================================
+function exportBackup(){
+  saveTallyUI();
+  const payload = JSON.stringify({version:1, unit, tallies});
+  // Save as self-loading HTML — open in any browser to restore
+  const escaped = payload.replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026');
+  const htmlContent = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<title>Tubing Tally Backup</title></head><body>'
+    +'<h2 style="font-family:Arial;color:#333">Tubing Tally Backup</h2>'
+    +'<p style="font-family:Arial;font-size:13px;color:#555">This file contains saved tally data.<br>'
+    +'To restore: open Tubing Tally Apps → Restore → Import, then select this file.<br>'
+    +'Or drag-and-drop this file onto the Import area.</p>'
+    +'<pre id="ttdata" style="display:none">'+escaped+'</pre>'
+    +'<p style="font-family:monospace;font-size:11px;color:#888">Saved: '+new Date().toLocaleString('en-GB')+'</p>'
+    +'</body></html>';
+  const blob = new Blob([htmlContent],{type:'text/html'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='tubing_tally_backup_'+new Date().toISOString().slice(0,10)+'.html';
+  a.click();
+  document.getElementById('backupMsg').textContent='✔ Saved as .html — open in browser to view, import to restore.';
+}
+
+function importBackup(e){
+  const file = e.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      let raw = ev.target.result;
+      let data;
+      // Support both .json and .html backup formats
+      if(raw.trim().startsWith('<') || raw.trim().startsWith('<!')) {
+        // HTML format — extract JSON from <pre id="ttdata">
+        const match = raw.match(/<pre[^>]*id="ttdata"[^>]*>([\s\S]*?)<\/pre>/i);
+        if(!match) throw new Error('No data found in HTML file');
+        data = JSON.parse(match[1]);
+      } else {
+        data = JSON.parse(raw);
+      }
+      if(!data.tallies) throw new Error('Invalid file');
+      if(!confirm('Current data will be replaced. Continue?')) return;
+      tallies = data.tallies;
+      unit = data.unit||'m';
+      activeTallyIdx = 0;
+      setUnit(unit);
+      renderTallyTabs();
+      showPage('tally');
+      loadTallyUI();
+      document.getElementById('backupMsg').textContent='✔ Backup restored successfully.';
+    }catch(err){
+      document.getElementById('backupMsg').textContent='✘ Invalid backup file: '+err.message;
+    }
+  };
+  reader.readAsText(file);
+}
+
+// ============================================================
+// HELPERS
+// ============================================================
+function escH(str){
+  if(!str) return '';
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+
+// ============================================================
+// UNIVERSAL DOWNLOAD — works in WebView/APK + Chrome
+// ============================================================
+function universalDownload(htmlContent, filename) {
+  // Method 1: Android WebView Interface (if app exposes it)
+  if (window.Android && window.Android.downloadFile) {
+    window.Android.downloadFile(filename, htmlContent);
+    return;
+  }
+
+  // Method 2: data URI (works in most WebViews)
+  try {
+    var encoded = 'data:text/html;charset=utf-8,' + encodeURIComponent(htmlContent);
+    var a = document.createElement('a');
+    a.href = encoded;
+    a.download = filename;
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function(){ 
+      if(a.parentNode) document.body.removeChild(a); 
+    }, 500);
+    return;
+  } catch(e) {}
+
+  // Method 3: Blob URL (Chrome browser fallback)
+  try {
+    var blob = new Blob([htmlContent], {type:'text/html;charset=utf-8'});
+    var url = URL.createObjectURL(blob);
+    var a2 = document.createElement('a');
+    a2.href = url;
+    a2.download = filename;
+    document.body.appendChild(a2);
+    a2.click();
+    setTimeout(function(){ 
+      if(a2.parentNode) document.body.removeChild(a2); 
+      URL.revokeObjectURL(url); 
+    }, 1000);
+    return;
+  } catch(e) {}
+
+  // Method 4: Open in new tab (last resort)
+  var win = window.open('', '_blank');
+  if (win) { win.document.write(htmlContent); win.document.close(); }
+  else { alert('Download kaj koreni. Browser e open kore Print > Save as PDF korun.'); }
+}
+
+// ============================================================
+// TBG PDF DOWNLOAD
+// ============================================================
+function tbgDownloadPDF(){
+  saveTallyUI();
+  var t = currentTally();
+  var wi = t.wellInfo||{};
+  var unitLabel = unit;
+  var cf = unit==='ft' ? 3.28084 : 1;
+
+  var cum = 0;
+  var rowsHTML = '';
+  t.rows.forEach(function(r){
+    cum += r.len;
+    var sl = r.type==='tubing' ? r.jointNum : '—';
+    var bg = r.type==='special' ? 'background:#f0ecff;font-style:italic;' : '';
+    rowsHTML += '<tr style="'+bg+'">'
+      + '<td>'+sl+'</td>'
+      + '<td style="text-align:left;">'+escH(r.serial)+'</td>'
+      + '<td>'+(r.len*cf).toFixed(2)+'</td>'
+      + '<td>'+escH(r.od)+'</td>'
+      + '<td>'+escH(r.id)+'</td>'
+      + '<td style="font-weight:bold;">'+(cum*cf).toFixed(2)+'</td>'
+      + '<td style="text-align:left;">'+escH(r.remarks)+'</td>'
+      + '</tr>';
+  });
+
+  var specs = getSelectedSpecs();
+  var specsRows = '';
+  specs.forEach(function(s){
+    specsRows += '<tr>'
+      +'<td style="font-weight:bold;">'+escH(s.name)+'</td>'
+      +'<td>'+escH(s.od)+'</td><td>'+escH(s.id)+'</td>'
+      +'<td>'+escH(s.grade)+'</td><td>'+escH(s.weight)+'</td>'
+      +'<td>'+escH(s.conn)+'</td><td>'+escH(s.torque)+'</td>'
+      +'</tr>';
+  });
+
+  var css = [
+    'body{font-family:Arial,sans-serif;font-size:11px;margin:16px;color:#000;}',
+    'h2{text-align:center;font-size:15px;text-transform:uppercase;margin-bottom:2px;}',
+    '.sub{text-align:center;font-size:12px;color:#444;margin-bottom:10px;}',
+    '.info{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin-bottom:10px;border:1px solid #ccc;padding:8px;}',
+    '.ic b{display:block;font-size:8px;color:#888;text-transform:uppercase;}',
+    '.ic{font-size:10px;padding:2px;}',
+    'table{width:100%;border-collapse:collapse;margin-bottom:12px;}',
+    'th{background:#ddd;border:1px solid #999;padding:5px 4px;font-size:9px;text-align:center;}',
+    'td{border:1px solid #bbb;padding:4px 5px;font-size:10px;text-align:center;}',
+    'tfoot td{background:#eee;font-weight:bold;}',
+    '.footer{text-align:center;font-size:8px;color:#888;margin-top:16px;border-top:1px solid #ddd;padding-top:4px;}',
+    '@media print{body{margin:0;}}'
+  ].join('');
+
+  var html = '<!DOCTYPE html><html><head><meta charset="UTF-8">'
+    +'<title>Tubing Tally Report</title>'
+    +'<style>'+css+'</style></head><body>'
+    +'<h2>Tubing Tally Report</h2>'
+    +'<div class="sub">'+escH(t.name)+'</div>'
+    +'<div class="info">'
+    +'<div class="ic"><b>Well</b>'+escH(wi.wellName||'—')+'</div>'
+    +'<div class="ic"><b>Field</b>'+escH(wi.fieldName||'—')+'</div>'
+    +'<div class="ic"><b>Rig</b>'+escH(wi.rig||'—')+'</div>'
+    +'<div class="ic"><b>Date</b>'+escH(wi.opDate||'—')+'</div>'
+    +'<div class="ic"><b>Operation</b>'+escH(wi.opType||'—')+'</div>'
+    +'<div class="ic"><b>Driller</b>'+escH(wi.driller||'—')+'</div>'
+    +'<div class="ic"><b>Prepared by</b>'+escH(wi.tallyMan||'—')+'</div>'
+    +'</div>';
+
+  if(specs.length > 0){
+    html += '<table><thead><tr>'
+      +'<th>Spec</th><th>OD(in)</th><th>ID(in)</th><th>Grade</th><th>Wt(lb/ft)</th><th>Conn.</th><th>Torque(ft-lb)</th>'
+      +'</tr></thead><tbody>'+specsRows+'</tbody></table>';
+  }
+
+  html += '<table><thead><tr>'
+    +'<th>SL</th><th>Item/Description</th><th>Length('+unitLabel+')</th>'
+    +'<th>OD(in)</th><th>ID(in)</th><th>Cum.Len('+unitLabel+')</th><th>Remarks</th>'
+    +'</tr></thead><tbody>'+rowsHTML+'</tbody>'
+    +'<tfoot><tr>'
+    +'<td colspan="2" style="text-align:right;">Total Joints: '+t.tubingJointCount+'</td>'
+    +'<td colspan="5">Total Length: '+cum.toFixed(2)+' '+unitLabel+'</td>'
+    +'</tr></tfoot></table>'
+    +(t.remarks?'<p><b>Remarks:</b> '+escH(t.remarks)+'</p>':'')
+    +'<div class="footer">Generated by Tally Maker App | © All rights reserved Abu Sayeed | sayeed1bapex@gmail.com</div>'
+    +'</body></html>';
+
+  var fname = (wi.wellName||'Tally').replace(/[^a-zA-Z0-9_\-]/g,'_')
+    +'_'+t.name.replace(/[^a-zA-Z0-9_\-]/g,'_')+'_Report.html';
+  universalDownload(html, fname);
+}
+
+
+// Init page display
+document.getElementById('pageTally').style.display='block';
+document.getElementById('pageBackup').style.display='none';
+// tbgSetUnit removed — setUnit() handles all unit logic
+
+
+</script>
+
+</body>
+</html>
